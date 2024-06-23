@@ -14,9 +14,12 @@ Roids.Extensions = Roids.Extensions or {};
 
 -- Executes the given Macro's body
 -- body: The Macro's body
-function Roids.ExecuteMacroBody(body)
+function Roids.ExecuteMacroBody(body,inline)
     local lines = Roids.splitString(body, "\n");
+    if inline then lines = Roids.splitString(body, "\\n"); end
+    -- print(body)
     for k,v in pairs(lines) do
+        -- print(v)
         ChatFrameEditBox:SetText(v);
         ChatEdit_SendText(ChatFrameEditBox);
     end
@@ -203,7 +206,11 @@ function Roids.DoWithConditionals(msg, hook, fixEmptyTargetFunc, targetBeforeAct
             return false;
         else
             if string.sub(msg, 1, 1) == "{" and string.sub(msg, -1) == "}" then
-                return Roids.ExecuteMacroByName(string.sub(msg, 2, -2));
+                if string.sub(msg, 2, 2) == "\"" and string.sub(msg, -2, -2) == "\"" then
+                    return Roids.ExecuteMacroBody(string.sub(msg, 3, -3), true);
+                else
+                    return Roids.ExecuteMacroByName(string.sub(msg, 2, -2));
+                end
             end
             
             if hook then
@@ -271,7 +278,11 @@ function Roids.DoWithConditionals(msg, hook, fixEmptyTargetFunc, targetBeforeAct
     
     local result = true;
     if string.sub(msg, 1, 1) == "{" and string.sub(msg, -1) == "}" then
-        result = Roids.ExecuteMacroByName(string.sub(msg, 2, -2));
+        if string.sub(msg, 2, 2) == "\"" and string.sub(msg, -2,-2) == "\"" then
+            result = Roids.ExecuteMacroBody(string.sub(msg, 3, -3), true);
+        else
+            result = Roids.ExecuteMacroByName(string.sub(msg, 2, -2));
+        end
     else
         action(msg);
     end
@@ -456,6 +467,7 @@ Roids.Frame:RegisterEvent("PLAYER_ENTER_COMBAT");
 Roids.Frame:RegisterEvent("PLAYER_LEAVE_COMBAT");
 Roids.Frame:RegisterEvent("START_AUTOREPEAT_SPELL");
 Roids.Frame:RegisterEvent("STOP_AUTOREPEAT_SPELL");
+Roids.Frame:RegisterEvent("UI_ERROR_MESSAGE");
 
 Roids.Frame:SetScript("OnEvent", function()
     Roids.Frame[event]();
@@ -465,7 +477,7 @@ function Roids.Frame.ADDON_LOADED()
     if event ~= "ADDON_LOADED" then
         return;
     end
-    
+
     if arg1 == "Roid-Macros" then
         Roids.InitializeExtensions();
         return;
@@ -516,6 +528,12 @@ end
 
 Roids.Frame.SPELLCAST_INTERRUPTED = Roids.Frame.SPELLCAST_CHANNEL_STOP;
 Roids.Frame.SPELLCAST_FAILED = Roids.Frame.SPELLCAST_CHANNEL_STOP;
+
+function Roids.Frame.UI_ERROR_MESSAGE()
+    if arg1 == ERR_NO_ATTACK_TARGET or string.find(string.lower(arg1), "^Can't attack") or arg1 == ERR_INVALID_ATTACK_TARGET then
+        Roids.CurrentSpell.autoAttack = false
+    end
+end
 
 function Roids.Frame.PLAYER_ENTER_COMBAT()
     Roids.CurrentSpell.autoAttack = true;

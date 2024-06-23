@@ -123,7 +123,14 @@ Roids.WeaponTypeNames = {
     Staffs =  { slot = "MainHandSlot", name = Roids.Localized.Staff },
     Maces =  { slot = "MainHandSlot", name = Roids.Localized.Mace },
     Polearms =  { slot = "MainHandSlot", name = Roids.Localized.Polearm },
+    -- OH
+    Daggers2 = { slot = "SecondaryHandSlot", name = Roids.Localized.Dagger },
+    Fists2 = { slot = "SecondaryHandSlot", name = Roids.Localized.FistWeapon },
+    Axes2 = { slot = "SecondaryHandSlot", name = Roids.Localized.Axe },
+    Swords2 = { slot = "SecondaryHandSlot", name = Roids.Localized.Sword },
+    Maces2 = { slot = "SecondaryHandSlot", name = Roids.Localized.Mace },
     Shields = { slot = "SecondaryHandSlot", name = Roids.Localized.Shield },
+    -- ranged
     Guns = { slot = "RangedSlot", name = Roids.Localized.Gun },
     Crossbows = { slot = "RangedSlot", name = Roids.Localized.Crossbow },
     Bows = { slot = "RangedSlot", name = Roids.Localized.Bow },

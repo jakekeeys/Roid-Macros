@@ -31,7 +31,12 @@ SlashCmdList.UNSHIFT = Roids.DoUnshift;
 
 SLASH_STARTATTACK1 = "/startattack";
 
-SlashCmdList.STARTATTACK = function(msg) Roids.DoCast(msg.." !Attack"); end
+SlashCmdList.STARTATTACK = function(msg)
+    if not Roids.CurrentSpell.autoAttack then
+        Roids.CurrentSpell.autoAttack = true
+        AttackTarget()
+    end
+end
 
 SLASH_STOPATTACK1 = "/stopattack";
 
