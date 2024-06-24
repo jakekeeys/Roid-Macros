@@ -345,7 +345,7 @@ function Roids.DoPetAttack(msg)
 end
 
 -- Searches for the given itemName in the player's iventory
--- itemName: The name of the item to look for
+-- itemName: The name/id of the item to look for
 -- returns: The bag number and the slot number if the item has been found. nil otherwhise
 function Roids.FindItem(itemName)
     RoidsTooltip:SetOwner(WorldFrame, "ANCHOR_NONE");
@@ -353,7 +353,9 @@ function Roids.FindItem(itemName)
         for j = 1, GetContainerNumSlots(i) do
             RoidsTooltip:ClearLines();
             RoidsTooltip:SetBagItem(i, j);
-            if RoidsTooltipTextLeft1:GetText() == itemName then
+            local l = GetContainerItemLink(i,j)
+            if l then _,_,l = string.find(l,"item:(%d+)") end
+            if RoidsTooltipTextLeft1:GetText() == itemName or (l and  l == itemName) then
                 return i, j;
             end
         end

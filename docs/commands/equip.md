@@ -1,8 +1,8 @@
 # /equip and /equipoh
 
-`/equip` puts an item with the given name into the main hand slot.
+`/equip` puts an item with the given name or id into the main hand slot.
 
-`/equipoh` puts an item with the given name into the off hand slot.
+`/equipoh` puts an item with the given name or id into the off hand slot.
 
 ## Examples
 
@@ -19,3 +19,11 @@ Will equip the Elementium Reinforced Bulwark if it can be found in the inventory
 ```
 
 Will equip Iblis, Blade of the Fallen Seraph if you currently have a shield equipped.
+
+---
+
+```lua
+/equip 19862
+```
+
+Will equip item id 19862, Aegis of the Blood God.
