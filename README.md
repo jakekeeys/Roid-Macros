@@ -1,5 +1,17 @@
 # Roid Macros
 
+### Customized for Weird Vibes:  
+* Uses SuperWoW (if available) to avoid target swaps
+* Empowers `/starattack` to avoid delaying OH swings when dual weilding
+* Allows item id's to be used in macros instead of names, to shorted them
+* Allows limited nesting of macros, e.g.:
+```
+/run -- CastSpellByName("Taunt")
+/cast [stance:2] {"/run if not UnitIsUnit("targettarget","player") then CastSpellByName("Taunt","target") end"}
+```
+
+---
+
 This addon allows you to use a small subset of the macro conditions, first introduced in the TBC expansion, in your 1.12.1 Vanilla client.
 
 Demo videos:
