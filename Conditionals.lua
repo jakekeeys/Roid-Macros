@@ -161,6 +161,7 @@ function Roids.HasWeaponEquipped(weaponType)
 	for i = 1, lines do
 		local label = getglobal("RoidsTooltipTextLeft"..i);
 		if label:GetText() then
+            -- print("left "..label:GetText())
 			if label:GetText() == localizedName then
                 return true;
             end
@@ -168,6 +169,7 @@ function Roids.HasWeaponEquipped(weaponType)
         
 		label = getglobal("RoidsTooltipTextRight"..i);
 		if label:GetText() then
+            -- print("right "..label:GetText())
 			if label:GetText() == localizedName then
                 return true;
             end

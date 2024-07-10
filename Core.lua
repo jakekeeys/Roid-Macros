@@ -12,6 +12,8 @@ Roids.mouseoverUnit = Roids.mouseoverUnit or nil;
 
 Roids.Extensions = Roids.Extensions or {};
 
+local has_superwow = SetAutoloot and true or false
+
 -- Executes the given Macro's body
 -- body: The Macro's body
 function Roids.ExecuteMacroBody(body,inline)
@@ -284,7 +286,11 @@ function Roids.DoWithConditionals(msg, hook, fixEmptyTargetFunc, targetBeforeAct
             result = Roids.ExecuteMacroByName(string.sub(msg, 2, -2));
         end
     else
-        action(msg);
+        if has_superwow and action == CastSpellByName then
+            action(msg,conditionals.target);
+        else
+            action(msg);
+        end
     end
     
     if needRetarget then
@@ -301,7 +307,7 @@ function Roids.DoCast(msg)
     msg = Roids.Trim(msg);
     
     for k, v in pairs(Roids.splitString(msg, ";%s*")) do
-        if Roids.DoWithConditionals(v, Roids.Hooks.CAST_SlashCmd, Roids.FixEmptyTarget, true, CastSpellByName) then
+        if Roids.DoWithConditionals(v, Roids.Hooks.CAST_SlashCmd, Roids.FixEmptyTarget, not has_superwow, CastSpellByName) then
             handled = true; -- we parsed at least one command
             break;
         end
@@ -336,7 +342,7 @@ end
 function Roids.DoPetAttack(msg)
     local handled = false;
     for k, v in pairs(Roids.splitString(msg, ";%s*")) do
-        if Roids.DoWithConditionals(v, nil, Roids.FixEmptyTarget, true, PetAttack) then
+        if Roids.DoWithConditionals(v, nil, Roids.FixEmptyTarget, not has_superwow, PetAttack) then
             handled = true;
             break;
         end
@@ -390,7 +396,7 @@ function Roids.DoUse(msg)
     end
     
     for k, v in pairs(Roids.splitString(msg, ";%s*")) do
-        if Roids.DoWithConditionals(v, action, Roids.FixEmptyTarget, true, action) then
+        if Roids.DoWithConditionals(v, action, Roids.FixEmptyTarget, not has_superwow, action) then
             handled = true;
             break;
         end
@@ -411,7 +417,7 @@ function Roids.DoEquipOffhand(msg)
     end
     
     for k, v in pairs(Roids.splitString(msg, ";%s*")) do
-        if Roids.DoWithConditionals(v, action, Roids.FixEmptyTarget, true, action) then
+        if Roids.DoWithConditionals(v, action, Roids.FixEmptyTarget, not has_superwow, action) then
             handled = true;
             break;
         end
@@ -431,7 +437,7 @@ function Roids.DoUnshift(msg)
     
     for k, v in pairs(Roids.splitString(msg, ";%s*")) do
         handled = false;
-        if Roids.DoWithConditionals(v, action, Roids.FixEmptyTarget, true, action) then
+        if Roids.DoWithConditionals(v, action, Roids.FixEmptyTarget, not has_superwow, action) then
             handled = true;
             break;
         end
