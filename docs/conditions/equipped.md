@@ -1,16 +1,16 @@
 # equipped
 
-Ensures that the given item type is equipped.
+Ensures that the given item or item type is equipped.
 
 ## Parameters
 
-May take a single parameter from the following list:
+May take specific item names or ids, or parameters from the following list:
 
 * Daggers - Looks for a dagger in your mainhand
 * Fists - Looks for a fist weapon in your mainhand
 * Axes - Looks for an axe in your mainhand
 * Swords - Looks for a sword in your mainhand
-* Staffs - Looks for a staff in your mainhand
+* Staves - Looks for a staff in your mainhand
 * Maces - Looks for a mace in your mainhand
 * Polearms - Looks for a polearm in your mainhand
 * Shields - Looks for a shield in your offhand
@@ -24,6 +24,8 @@ May take a single parameter from the following list:
 
 ```lua
 /cast [equipped:Bows] Shoot Bow; [equipped:Crossbows] Shoot Crossbow; [equipped:Guns] Shoot Gun; [equipped:Thrown] Throw
+/cast [equipped:Heartstriker/22811] Shoot Bow
+/cast [equipped:Badge_Of_The_Swarm_Guard nocooldown:Death_Wish] Death Wish;Bloodthirst
 ```
 
 Will use your ranged shoot ability depending on what ranged weapon you

@@ -8,19 +8,20 @@ Roids.Locale = GetLocale();
 Roids.Localized = {};
 
 if Roids.Locale == "enUS" or Roids.Locale == "enGB" then
-    Roids.Localized.Shield = "Shield";
-    Roids.Localized.Bow = "Bow";
-    Roids.Localized.Crossbow = "Crossbow";
-    Roids.Localized.Gun = "Gun";
+    Roids.Localized.Shield = "Shields";
+    Roids.Localized.Bow = "Bows";
+    Roids.Localized.Crossbow = "Crossbows";
+    Roids.Localized.Gun = "Guns";
     Roids.Localized.Thrown = "Thrown";
-    Roids.Localized.Wand = "Wand";
-    Roids.Localized.Sword = "Sword";
-    Roids.Localized.Staff = "Staff";
-    Roids.Localized.Polearm = "Polearm";
-    Roids.Localized.Mace = "Mace";
-    Roids.Localized.FistWeapon = "Fist Weapon";
-    Roids.Localized.Dagger = "Dagger";
-    Roids.Localized.Axe = "Axe";
+    Roids.Localized.Wand = "Wands";
+    Roids.Localized.Sword = "Swords";
+    Roids.Localized.Staff = "Staves";
+    Roids.Localized.Polearm = "Polearms";
+    Roids.Localized.Mace = "Maces";
+    Roids.Localized.FistWeapon = "Fist Weapons";
+    Roids.Localized.Dagger = "Daggers";
+    Roids.Localized.Axe = "Axes";
+
     Roids.Localized.Attack = "Attack";
     Roids.Localized.AutoShot = "Auto Shot";
     Roids.Localized.Shoot = "Shoot";
@@ -40,19 +41,20 @@ if Roids.Locale == "enUS" or Roids.Locale == "enGB" then
         ["Undead"] = "Undead",
     };
 elseif Roids.Locale == "deDE" then
-    Roids.Localized.Shield = "Shield";
-    Roids.Localized.Bow = "Bow";
-    Roids.Localized.Crossbow = "Crossbow";
-    Roids.Localized.Gun = "Gun";
+    Roids.Localized.Shield = "Shields";
+    Roids.Localized.Bow = "Bows";
+    Roids.Localized.Crossbow = "Crossbows";
+    Roids.Localized.Gun = "Guns";
     Roids.Localized.Thrown = "Thrown";
-    Roids.Localized.Wand = "Wand";
-    Roids.Localized.Sword = "Sword";
-    Roids.Localized.Staff = "Staff";
-    Roids.Localized.Polearm = "Polearm";
-    Roids.Localized.Mace = "Mace";
-    Roids.Localized.FistWeapon = "Fist Weapon";
-    Roids.Localized.Dagger = "Dagger";
-    Roids.Localized.Axe = "Axe";
+    Roids.Localized.Wand = "Wands";
+    Roids.Localized.Sword = "Swords";
+    Roids.Localized.Staff = "Staves";
+    Roids.Localized.Polearm = "Polearms";
+    Roids.Localized.Mace = "Maces";
+    Roids.Localized.FistWeapon = "Fist Weapons";
+    Roids.Localized.Dagger = "Daggers";
+
+    Roids.Localized.Axe = "Axes";
     Roids.Localized.Attack = "Attack";
     Roids.Localized.AutoShot = "Auto Shot";
     Roids.Localized.Shoot = "Shoot";
@@ -72,19 +74,20 @@ elseif Roids.Locale == "deDE" then
         ["Untoter"] = "Undead",
     };
 elseif Roids.Locale == "frFR" then
-    Roids.Localized.Shield = "Shield";
-    Roids.Localized.Bow = "Bow";
-    Roids.Localized.Crossbow = "Crossbow";
-    Roids.Localized.Gun = "Gun";
+    Roids.Localized.Shield = "Shields";
+    Roids.Localized.Bow = "Bows";
+    Roids.Localized.Crossbow = "Crossbows";
+    Roids.Localized.Gun = "Guns";
     Roids.Localized.Thrown = "Thrown";
-    Roids.Localized.Wand = "Wand";
-    Roids.Localized.Sword = "Sword";
-    Roids.Localized.Staff = "Staff";
-    Roids.Localized.Polearm = "Polearm";
-    Roids.Localized.Mace = "Mace";
-    Roids.Localized.FistWeapon = "Fist Weapon";
-    Roids.Localized.Dagger = "Dagger";
-    Roids.Localized.Axe = "Axe";
+    Roids.Localized.Wand = "Wands";
+    Roids.Localized.Sword = "Swords";
+    Roids.Localized.Staff = "Staves";
+    Roids.Localized.Polearm = "Polearms";
+    Roids.Localized.Mace = "Maces";
+    Roids.Localized.FistWeapon = "Fist Weapons";
+    Roids.Localized.Dagger = "Daggers";
+    Roids.Localized.Axe = "Axes";
+
     Roids.Localized.Attack = "Attack";
     Roids.Localized.AutoShot = "Auto Shot";
     Roids.Localized.Shoot = "Shoot";
@@ -104,19 +107,20 @@ elseif Roids.Locale == "frFR" then
         ["Mort-vivant"] = "Undead",
     };
 elseif Roids.Locale == "koKR" then
-    Roids.Localized.Shield = "Shield";
-    Roids.Localized.Bow = "Bow";
-    Roids.Localized.Crossbow = "Crossbow";
-    Roids.Localized.Gun = "Gun";
+    Roids.Localized.Shield = "Shields";
+    Roids.Localized.Bow = "Bows";
+    Roids.Localized.Crossbow = "Crossbows";
+    Roids.Localized.Gun = "Guns";
     Roids.Localized.Thrown = "Thrown";
-    Roids.Localized.Wand = "Wand";
-    Roids.Localized.Sword = "Sword";
-    Roids.Localized.Staff = "Staff";
-    Roids.Localized.Polearm = "Polearm";
-    Roids.Localized.Mace = "Mace";
-    Roids.Localized.FistWeapon = "Fist Weapon";
-    Roids.Localized.Dagger = "Dagger";
-    Roids.Localized.Axe = "Axe";
+    Roids.Localized.Wand = "Wands";
+    Roids.Localized.Sword = "Swords";
+    Roids.Localized.Staff = "Staves";
+    Roids.Localized.Polearm = "Polearms";
+    Roids.Localized.Mace = "Maces";
+    Roids.Localized.FistWeapon = "Fist Weapons";
+    Roids.Localized.Dagger = "Daggers";
+    Roids.Localized.Axe = "Axes";
+
     Roids.Localized.Attack = "Attack";
     Roids.Localized.AutoShot = "Auto Shot";
     Roids.Localized.Shoot = "Shoot";
@@ -136,19 +140,20 @@ elseif Roids.Locale == "koKR" then
         ["언데드"] = "Undead",
     };
 elseif Roids.Locale == "zhCN" then
-    Roids.Localized.Shield = "Shield";
-    Roids.Localized.Bow = "Bow";
-    Roids.Localized.Crossbow = "Crossbow";
-    Roids.Localized.Gun = "Gun";
+    Roids.Localized.Shield = "Shields";
+    Roids.Localized.Bow = "Bows";
+    Roids.Localized.Crossbow = "Crossbows";
+    Roids.Localized.Gun = "Guns";
     Roids.Localized.Thrown = "Thrown";
-    Roids.Localized.Wand = "Wand";
-    Roids.Localized.Sword = "Sword";
-    Roids.Localized.Staff = "Staff";
-    Roids.Localized.Polearm = "Polearm";
-    Roids.Localized.Mace = "Mace";
-    Roids.Localized.FistWeapon = "Fist Weapon";
-    Roids.Localized.Dagger = "Dagger";
-    Roids.Localized.Axe = "Axe";
+    Roids.Localized.Wand = "Wands";
+    Roids.Localized.Sword = "Swords";
+    Roids.Localized.Staff = "Staves";
+    Roids.Localized.Polearm = "Polearms";
+    Roids.Localized.Mace = "Maces";
+    Roids.Localized.FistWeapon = "Fist Weapons";
+    Roids.Localized.Dagger = "Daggers";
+    Roids.Localized.Axe = "Axes";
+
     Roids.Localized.Attack = "Attack";
     Roids.Localized.AutoShot = "Auto Shot";
     Roids.Localized.Shoot = "Shoot";
@@ -168,19 +173,20 @@ elseif Roids.Locale == "zhCN" then
         ["亡灵"] = "Undead",
     };
 elseif Roids.Locale == "zhTW" then
-    Roids.Localized.Shield = "Shield";
-    Roids.Localized.Bow = "Bow";
-    Roids.Localized.Crossbow = "Crossbow";
-    Roids.Localized.Gun = "Gun";
+    Roids.Localized.Shield = "Shields";
+    Roids.Localized.Bow = "Bows";
+    Roids.Localized.Crossbow = "Crossbows";
+    Roids.Localized.Gun = "Guns";
     Roids.Localized.Thrown = "Thrown";
-    Roids.Localized.Wand = "Wand";
-    Roids.Localized.Sword = "Sword";
-    Roids.Localized.Staff = "Staff";
-    Roids.Localized.Polearm = "Polearm";
-    Roids.Localized.Mace = "Mace";
-    Roids.Localized.FistWeapon = "Fist Weapon";
-    Roids.Localized.Dagger = "Dagger";
-    Roids.Localized.Axe = "Axe";
+    Roids.Localized.Wand = "Wands";
+    Roids.Localized.Sword = "Swords";
+    Roids.Localized.Staff = "Staves";
+    Roids.Localized.Polearm = "Polearms";
+    Roids.Localized.Mace = "Maces";
+    Roids.Localized.FistWeapon = "Fist Weapons";
+    Roids.Localized.Dagger = "Daggers";
+    Roids.Localized.Axe = "Axes";
+
     Roids.Localized.Attack = "Attack";
     Roids.Localized.AutoShot = "Auto Shot";
     Roids.Localized.Shoot = "Shoot";
@@ -200,19 +206,20 @@ elseif Roids.Locale == "zhTW" then
         ["不死族"] = "Undead",
     };
 elseif Roids.Locale == "ruRU" then
-    Roids.Localized.Shield = "Shield";
-    Roids.Localized.Bow = "Bow";
-    Roids.Localized.Crossbow = "Crossbow";
-    Roids.Localized.Gun = "Gun";
+    Roids.Localized.Shield = "Shields";
+    Roids.Localized.Bow = "Bows";
+    Roids.Localized.Crossbow = "Crossbows";
+    Roids.Localized.Gun = "Guns";
     Roids.Localized.Thrown = "Thrown";
-    Roids.Localized.Wand = "Wand";
-    Roids.Localized.Sword = "Sword";
-    Roids.Localized.Staff = "Staff";
-    Roids.Localized.Polearm = "Polearm";
-    Roids.Localized.Mace = "Mace";
-    Roids.Localized.FistWeapon = "Fist Weapon";
-    Roids.Localized.Dagger = "Dagger";
-    Roids.Localized.Axe = "Axe";
+    Roids.Localized.Wand = "Wands";
+    Roids.Localized.Sword = "Swords";
+    Roids.Localized.Staff = "Staves";
+    Roids.Localized.Polearm = "Polearms";
+    Roids.Localized.Mace = "Maces";
+    Roids.Localized.FistWeapon = "Fist Weapons";
+    Roids.Localized.Dagger = "Daggers";
+    Roids.Localized.Axe = "Axes";
+
     Roids.Localized.Attack = "Attack";
     Roids.Localized.AutoShot = "Auto Shot";
     Roids.Localized.Shoot = "Shoot";
@@ -232,19 +239,20 @@ elseif Roids.Locale == "ruRU" then
         ["Нежить"] = "Undead",
     };
 elseif Roids.Locale == "esES" then
-    Roids.Localized.Shield = "Shield";
-    Roids.Localized.Bow = "Bow";
-    Roids.Localized.Crossbow = "Crossbow";
-    Roids.Localized.Gun = "Gun";
+    Roids.Localized.Shield = "Shields";
+    Roids.Localized.Bow = "Bows";
+    Roids.Localized.Crossbow = "Crossbows";
+    Roids.Localized.Gun = "Guns";
     Roids.Localized.Thrown = "Thrown";
-    Roids.Localized.Wand = "Wand";
-    Roids.Localized.Sword = "Sword";
-    Roids.Localized.Staff = "Staff";
-    Roids.Localized.Polearm = "Polearm";
-    Roids.Localized.Mace = "Mace";
-    Roids.Localized.FistWeapon = "Fist Weapon";
-    Roids.Localized.Dagger = "Dagger";
-    Roids.Localized.Axe = "Axe";
+    Roids.Localized.Wand = "Wands";
+    Roids.Localized.Sword = "Swords";
+    Roids.Localized.Staff = "Staves";
+    Roids.Localized.Polearm = "Polearms";
+    Roids.Localized.Mace = "Maces";
+    Roids.Localized.FistWeapon = "Fist Weapons";
+    Roids.Localized.Dagger = "Daggers";
+    Roids.Localized.Axe = "Axes";
+
     Roids.Localized.Attack = "Attack";
     Roids.Localized.AutoShot = "Auto Shot";
     Roids.Localized.Shoot = "Shoot";

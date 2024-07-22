@@ -5,6 +5,10 @@
 local _G = _G or getfenv(0)
 local Roids = _G.Roids or {}
 
+local function print(msg)
+    DEFAULT_CHAT_FRAME:AddMessage(msg)
+end
+
 -- Validates that the given target is either friend (if [help]) or foe (if [harm])
 -- target: The unit id to check
 -- help: Optional. If set to 1 then the target must be friendly. If set to 0 it must be an enemy.
@@ -53,6 +57,25 @@ function Roids.GetCurrentShapeshiftIndex()
     return 0;
 end
 
+local function CheckAura(auraName,isbuff,unit)
+    local i = 1
+    local id = 0
+    while id do
+        if isbuff then
+            _,_,id = UnitBuff(unit,i)
+        else
+            _,_,_,id = UnitDebuff(unit,i)
+        end
+        if id and id < -1 then id = id + 65536 end
+        auraName = string.gsub(auraName, "_"," ")
+        if auraName == SpellInfo(id) then
+            return true
+        end
+        i = i + 1
+    end
+    return false
+end
+
 -- Checks whether or not the given buffName is present on the given unit's buff bar
 -- buffName: The name of the buff
 -- unit: The UnitID of the unit to check
@@ -61,20 +84,8 @@ function Roids.HasBuffName(buffName, unit)
     if not buffName or not unit then
         return false;
     end
-    
-    local text = getglobal(RoidsTooltip:GetName().."TextLeft1");
-	for i=1, 32 do
-		RoidsTooltip:SetOwner(UIParent, "ANCHOR_NONE");
-		RoidsTooltip:SetUnitBuff(unit, i);
-		name = text:GetText();
-		RoidsTooltip:Hide();
-        buffName = string.gsub(buffName, "_", " ");
-		if ( name and string.find(name, buffName) ) then
-			return true;
-		end
-    end
-    
-    return false;
+
+    return CheckAura(buffName,true,unit)
 end
 
 -- Checks whether or not the given buffName is present on the given unit's debuff bar
@@ -85,20 +96,8 @@ function Roids.HasDeBuffName(buffName, unit)
     if not buffName or not unit then
         return false;
     end
-    
-    local text = getglobal(RoidsTooltip:GetName().."TextLeft1");
-	for i=1, 16 do
-		RoidsTooltip:SetOwner(UIParent, "ANCHOR_NONE");
-		RoidsTooltip:SetUnitDebuff(unit, i);
-		name = text:GetText();
-		RoidsTooltip:Hide();
-        buffName = string.gsub(buffName, "_", " ");
-		if ( name and string.find(name, buffName) ) then
-			return true;
-		end
-    end
-    
-    return false;
+
+    return CheckAura(buffName,false,unit) or CheckAura(buffName,true,unit)
 end
 
 -- Checks whether or not the given textureName is present in the current player's buff bar
@@ -120,7 +119,7 @@ Roids.WeaponTypeNames = {
     Fists =  { slot = "MainHandSlot", name = Roids.Localized.FistWeapon },
     Axes =  { slot = "MainHandSlot", name = Roids.Localized.Axe },
     Swords =  { slot = "MainHandSlot", name = Roids.Localized.Sword },
-    Staffs =  { slot = "MainHandSlot", name = Roids.Localized.Staff },
+    Staves =  { slot = "MainHandSlot", name = Roids.Localized.Staff },
     Maces =  { slot = "MainHandSlot", name = Roids.Localized.Mace },
     Polearms =  { slot = "MainHandSlot", name = Roids.Localized.Polearm },
     -- OH
@@ -138,6 +137,28 @@ Roids.WeaponTypeNames = {
     Wands = { slot = "RangedSlot", name = Roids.Localized.Wand },
 };
 
+-- Checks whether a given piece of gear is equipped is currently equipped
+-- gearId: The name (or item id) of the gear (e.g. Badge_Of_The_Swam_Guard, etc.)
+-- returns: True when equipped, otherwhise false
+function Roids.HasGearEquipped(gearId)
+    local slotLink
+    for slotId=1,19 do
+        slotLink = GetInventoryItemLink("player",slotId)
+        if slotLink then
+            local _,_,itemId = string.find(slotLink,"item:(%d+)")
+            if gearId == itemId then
+                return true
+            end
+            local gearName = string.gsub(gearId, "_", " ");
+            local name,_link,_,_lvl,_type,subtype = GetItemInfo(itemId)
+            if name == gearName then
+                return true
+            end
+        end
+    end
+    return false
+end
+
 -- Checks whether or not the given weaponType is currently equipped
 -- weaponType: The name of the weapon's type (e.g. Axe, Shield, etc.)
 -- returns: True when equipped, otherwhise false
@@ -146,36 +167,25 @@ function Roids.HasWeaponEquipped(weaponType)
         return false;
     end
     
-	RoidsTooltip:SetOwner(UIParent, "ANCHOR_NONE");
-    
     local slotName = Roids.WeaponTypeNames[weaponType].slot;
     local localizedName = Roids.WeaponTypeNames[weaponType].name;
-
     local slotId = GetInventorySlotInfo(slotName);
-    hasItem = RoidsTooltip:SetInventoryItem("player", slotId);
-    if not hasItem then
+    local slotLink = GetInventoryItemLink("player",slotId)
+    if not slotLink then
         return false;
     end
-    
-	local lines = RoidsTooltip:NumLines();
-	for i = 1, lines do
-		local label = getglobal("RoidsTooltipTextLeft"..i);
-		if label:GetText() then
-            -- print("left "..label:GetText())
-			if label:GetText() == localizedName then
-                return true;
-            end
-		end
-        
-		label = getglobal("RoidsTooltipTextRight"..i);
-		if label:GetText() then
-            -- print("right "..label:GetText())
-			if label:GetText() == localizedName then
-                return true;
-            end
-		end
+
+    local _,_,itemId = string.find(slotLink,"item:(%d+)")
+    local _name,_link,_,_lvl,_type,subtype = GetItemInfo(itemId)
+    -- just had to be special huh?
+    local fist = string.find(subtype,"^Fist")
+    -- drops things like the One-Handed prefix
+    local _,_,subtype = string.find(subtype,"%s?(%S+)$")
+
+    if subtype == localizedName or (fist and (Roids.WeaponTypeNames[weaponType].name == Roids.Localized.FistWeapon)) then
+        return true
     end
-    
+
     return false;
 end
 
@@ -189,6 +199,7 @@ function Roids.IsTargetInGroupType(target, groupType)
         upperBound = 40;
     end
     
+    -- use UnitIsUnit here? is it faster than name?
     for i = 1, upperBound do
         if UnitName(groupType..i) == UnitName(target) then
             return true;
@@ -410,7 +421,14 @@ Roids.Keywords = {
     end,
     
     equipped = function(conditionals)
-        return Roids.HasWeaponEquipped(conditionals.equipped);
+        local isEquipped = false
+        for k,v in pairs(Roids.splitString(conditionals.equipped, "/")) do
+            if Roids.HasGearEquipped(v) or Roids.HasWeaponEquipped(v) then
+                isEquipped = true
+                break
+            end
+        end
+        return isEquipped
     end,
     
     dead = function(conditionals)
