@@ -4,10 +4,16 @@
 * Uses SuperWoW (if available) to avoid target swaps
 * Empowers `/starattack` to avoid delaying OH swings when dual weilding
 * Allows item id's to be used in macros instead of names, to shorted them
-* Allows limited nesting of macros, e.g.:
+* Allows limited nesting of macros:
 ```
 /run -- CastSpellByName("Taunt")
 /cast [stance:2] {"/run if not UnitIsUnit("targettarget","player") then CastSpellByName("Taunt","target") end"}
+```
+* Expanded the power of the `equipped` conditional:
+```
+/cast [equipped:Bows] Shoot Bow; [equipped:Crossbows] Shoot Crossbow; [equipped:Guns] Shoot Gun; [equipped:Thrown] Throw
+/cast [equipped:Heartstriker/22811] Shoot Bow
+/cast [equipped:Badge_Of_The_Swarm_Guard nocooldown:Death_Wish] Death Wish;Bloodthirst
 ```
 
 ---
