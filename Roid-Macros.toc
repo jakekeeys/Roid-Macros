@@ -9,8 +9,8 @@ Widgets.xml
 Localization.lua
 Utility.lua
 Core.lua
-Console.lua
 Conditionals.lua
+Console.lua
 ExtensionsManager.lua
 
 Compatibility\SuperMacro.lua

@@ -108,4 +108,5 @@ This is a list of all Chat Commands that support conditions:
 * [stance](conditions/stance.md)
 * [stealth / nostealth](conditions/stealth.md)
 * [type](conditions/type.md)
+* [zone](conditions/zone.md)
 * [UnitID](conditions/target.md)

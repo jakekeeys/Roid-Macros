@@ -84,39 +84,68 @@ end
 -- msg: The message to parse
 -- returns: A set of conditionals found inside the given string
 function Roids.parseMsg(msg)
-	local modifier = "";
-	local modifierEnd = string.find(msg, "]");
-	local help = nil;
+    local modifier = "";
+    local modifierEnd = string.find(msg, "]");
+    local help = nil;
 	
     -- If we find conditionals trim down the message to everything except the conditionals
-	if string.sub(msg, 1, 1) == "[" and modifierEnd then
-		modifier = string.sub(msg, 2, modifierEnd - 1);
-		msg = string.sub(msg, modifierEnd + 1);
+    if string.sub(msg, 1, 1) == "[" and modifierEnd then
+        modifier = string.sub(msg, 2, modifierEnd - 1);
+        msg = string.sub(msg, modifierEnd + 1);
     -- No conditionals found. Just return the message as is
-	elseif string.sub(msg, 1, 1) ~= "!" then
-		return msg;
-	end
+    elseif string.sub(msg, 1, 1) ~= "!" then
+        return msg;
+    end
 	
     local target;
     local conditionals = {};
     
     msg = Roids.Trim(msg)
-    
+
     if string.sub(msg, 1, 1) == "!" then
         msg = string.sub(msg, 2);
         conditionals.checkchanneled = msg;
     end
-        
-    local pattern = "(@?%w+:?>?<?%w*[:'_?%-?%w*]*[/?%w*]*)";
+
+    local pattern = "(@?%w+:?>?<?%w*[><:'_?%-?%w*]*[/?_?%w*]*)";
+    -- print(modifier)
     for w in string.gfind(modifier, pattern) do
         local delimeter, which = Roids.FindDelimeter(w);
+        -- print(delimeter)
+        -- print(which)
         -- x:y
         if delimeter then
             local conditional = string.sub(w, 1, delimeter - 1);
+            local rest = string.sub(w, delimeter+1);
+            conditionals[conditional] = conditionals[conditional] or {}
+            -- print("cond "..conditional)
+            -- print("rest "..rest)
             if which then
-                conditionals[conditional] = { bigger = which, amount = string.sub(w, delimeter + 1) };
+                -- print("condwhich1 "..which.." "..conditional)
+                table.insert(conditionals[conditional], { bigger = which, amount = string.sub(w, delimeter + 1) })
+                -- conditionals[conditional] = { bigger = which, amount = string.sub(w, delimeter + 1) };
             else
-                conditionals[conditional] = string.sub(w, delimeter + 1);
+                -- conditionals[conditional] = rest;
+
+                delimeter, which = Roids.FindDelimeter(rest);
+                if delimeter then
+                    local conditional2 = string.sub(rest, 1, delimeter - 1);
+                    local rest2 = string.sub(rest, delimeter+1);
+                    -- print("cond "..conditional2)
+                    -- print("rest "..rest2)
+                    -- print("rest "..delimeter)
+                    if which then
+                        -- print("condwhich2 "..which.." "..conditional2)
+                        table.insert(conditionals[conditional], { name = conditional2, bigger = which, amount = rest2 })
+                        -- conditionals[conditional] = { name = conditional2, bigger = which, amount = rest2 };
+                    else
+                        table.insert(conditionals[conditional], string.sub(rest2, delimeter + 1) )
+                        -- conditionals[conditional] = string.sub(rest2, delimeter + 1);
+                    end
+                else
+                    table.insert(conditionals[conditional], rest)
+                end
+                -- print("condnotwhich "..conditional)
             end
         -- @target
         elseif string.sub(w, 1, 1) == "@" then
@@ -354,25 +383,36 @@ end
 -- itemName: The name/id of the item to look for
 -- returns: The bag number and the slot number if the item has been found. nil otherwhise
 function Roids.FindItem(itemName)
-    RoidsTooltip:SetOwner(WorldFrame, "ANCHOR_NONE");
-    for i = 0, 4 do
-        for j = 1, GetContainerNumSlots(i) do
-            RoidsTooltip:ClearLines();
-            RoidsTooltip:SetBagItem(i, j);
-            local l = GetContainerItemLink(i,j)
-            if l then _,_,l = string.find(l,"item:(%d+)") end
-            if RoidsTooltipTextLeft1:GetText() == itemName or (l and  l == itemName) then
-                return i, j;
+    -- just in case, prob not neccesary given where FindItem is used
+    local itemName = string.gsub(itemName, "_", " ");
+
+    -- check inv first, unlikely that bags are a smaller search space
+    local slotLink = nil
+    for i = 0, 19 do
+        slotLink = GetInventoryItemLink("player",i)
+        if slotLink then
+            local _,_,itemId = string.find(slotLink,"item:(%d+)")
+            if itemName == itemId then
+                return -i
+            end
+            -- local gearName = string.gsub(itemId, "_", " ");
+            local name,_link,_,_lvl,_type,subtype = GetItemInfo(itemId)
+            if name == itemName then
+                return -i
             end
         end
     end
-    
-    for i = 0, 19 do
-        RoidsTooltip:ClearLines();
-        hasItem = RoidsTooltip:SetInventoryItem("player", i);
-        
-        if hasItem and RoidsTooltipTextLeft1:GetText() == itemName then
-            return -i;
+
+    for i = 0, 4 do
+        for j = 1, GetContainerNumSlots(i) do
+            local l = GetContainerItemLink(i,j)
+            if l then
+                _,_,itemId = string.find(l,"item:(%d+)")
+                local name,_link,_,_lvl,_type,subtype = GetItemInfo(itemId)
+                if itemId and itemId == itemName or itemName == name then
+                    return i, j;
+                end
+            end
         end
     end
 end
@@ -381,8 +421,32 @@ end
 -- msg: The raw message intercepted from a /use or /equip command
 function Roids.DoUse(msg)
     local handled = false;
-    
+
     local action = function(msg)
+        local checkFor = function(bookType)
+            local i = 1
+            local msg_g = string.gsub(msg, "_", " ");
+            while true do
+                local name, spellRank = GetSpellName(i, bookType);
+
+                if not name then
+                    break;
+                end
+                
+                if name == msg_g then
+                    return true
+                end
+                
+                i = i + 1
+            end
+            return false
+        end
+
+        -- check if it's a spell!
+        if checkFor(BOOKTYPE_PET) or checkFor(BOOKTYPE_SPELL) then
+            return Roids.Hooks.CAST_SlashCmd(msg)
+        end
+
         local bag, slot = Roids.FindItem(msg);
         
         if bag and bag < 0 then
@@ -394,7 +458,7 @@ function Roids.DoUse(msg)
         end
         UseContainerItem(bag, slot);
     end
-    
+
     for k, v in pairs(Roids.splitString(msg, ";%s*")) do
         if Roids.DoWithConditionals(v, action, Roids.FixEmptyTarget, not has_superwow, action) then
             handled = true;

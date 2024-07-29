@@ -29,6 +29,10 @@ SLASH_UNSHIFT1 = "/unshift";
 
 SlashCmdList.UNSHIFT = Roids.DoUnshift;
 
+SLASH_CANCELAURA1 = "/cancelaura";
+
+SlashCmdList.CANCELAURA = Roids.CancelAura;
+
 SLASH_STARTATTACK1 = "/startattack";
 
 SlashCmdList.STARTATTACK = function(msg)

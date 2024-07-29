@@ -25,7 +25,7 @@ May take specific item names or ids, or parameters from the following list:
 ```lua
 /cast [equipped:Bows] Shoot Bow; [equipped:Crossbows] Shoot Crossbow; [equipped:Guns] Shoot Gun; [equipped:Thrown] Throw
 /cast [equipped:Heartstriker/22811] Shoot Bow
-/cast [equipped:Badge_Of_The_Swarm_Guard nocooldown:Death_Wish] Death Wish;Bloodthirst
+/cast [equipped:Badge_Of_The_Swarmguard nocooldown:Death_Wish] Death Wish;Bloodthirst
 ```
 
 Will use your ranged shoot ability depending on what ranged weapon you
