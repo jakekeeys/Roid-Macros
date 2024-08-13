@@ -20,6 +20,9 @@ SlashCmdList.USE = Roids.DoUse;
 SLASH_EQUIP1 = "/equip";
 
 SlashCmdList.EQUIP = Roids.DoUse;
+-- take back supermacro and pfUI /equip
+SlashCmdList.SMEQUIP = Roids.DoUse;
+SlashCmdList.PFEQUIP = Roids.DoUse;
 
 SLASH_EQUIPOH1 = "/equipoh";
 
@@ -30,21 +33,38 @@ SLASH_UNSHIFT1 = "/unshift";
 SlashCmdList.UNSHIFT = Roids.DoUnshift;
 
 SLASH_CANCELAURA1 = "/cancelaura";
+SLASH_CANCELAURA2 = "/unbuff";
 
 SlashCmdList.CANCELAURA = Roids.CancelAura;
 
 SLASH_STARTATTACK1 = "/startattack";
 
 SlashCmdList.STARTATTACK = function(msg)
-    if not Roids.CurrentSpell.autoAttack then
-        Roids.CurrentSpell.autoAttack = true
+    if not UnitExists("target") or UnitIsDead("target") then TargetNearestEnemy() end
+
+    if not Roids.CurrentSpell.autoAttack and not Roids.CurrentSpell.autoAttackLock and UnitExists("target") and UnitCanAttack("player","target") then
+        Roids.CurrentSpell.autoAttackLock = true
+        -- time a reset in case an attack could not be started
+        local elapsed = 0
+        Roids.Frame:SetScript("OnUpdate", function ()
+            elapsed = elapsed + arg1
+            if Roids.CurrentSpell.autoAttackLock and elapsed > 0.2 then
+                Roids.CurrentSpell.autoAttackLock = false
+                Roids.Frame:SetScript("OnUpdate", nil)
+            end
+        end)
         AttackTarget()
     end
 end
 
 SLASH_STOPATTACK1 = "/stopattack";
 
-SlashCmdList.STOPATTACK = function(msg) if Roids.CurrentSpell.autoAttack then Roids.DoCast(msg.." Attack"); end end
+SlashCmdList.STOPATTACK = function(msg)
+    if Roids.CurrentSpell.autoAttack and UnitExists("target") then
+        AttackTarget()
+        Roids.CurrentSpell.autoAttack = false
+    end
+end
 
 SLASH_STOPCASTING1 = "/stopcasting";
 

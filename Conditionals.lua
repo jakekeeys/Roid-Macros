@@ -66,7 +66,7 @@ function Roids.CancelAura(auraName)
         auraName = string.gsub(auraName, "_"," ")
         local bid = GetPlayerBuffID(aura_ix)
         bid = (bid < -1) and bid + 65536 or bid
-        if SpellInfo(bid) == auraName then
+        if string.lower(SpellInfo(bid)) == string.lower(auraName) then
             CancelPlayerBuff(aura_ix)
             break
         end
@@ -257,6 +257,7 @@ end
 -- amount: The required amount
 -- returns: True or false
 function Roids.ValidatePower(unit, bigger, amount)
+    if not unit then return false end
     local powerPercent = 100 / UnitManaMax(unit) * UnitMana(unit);
     if bigger == 0 then
         return powerPercent < tonumber(amount);
@@ -271,6 +272,7 @@ end
 -- amount: The required amount
 -- returns: True or false
 function Roids.ValidateRawPower(unit, bigger, amount)
+    if not unit then return false end
     local power = UnitMana(unit);
     if bigger == 0 then
         return power < tonumber(amount);
@@ -285,6 +287,7 @@ end
 -- amount: The required amount
 -- returns: True or false
 function Roids.ValidateHp(unit, bigger, amount)
+    if not unit then return false end
     local powerPercent = 100 / UnitHealthMax(unit) * UnitHealth(unit);
     if bigger == 0 then
         return powerPercent < tonumber(amount);
@@ -323,17 +326,17 @@ function Roids.ValidateCooldown(cooldown_data,check_absence)
     elseif limit == 0 then
         return (start + cd - GetTime()) <= amount
     elseif limit == nil then
-        if check_absence then
-            -- print("ab: "..name)
-            return cd == 0
-        else
-            -- print("pres: "..name)
+        -- if check_absence then
+        --     -- print("ab: "..name)
+        --     return cd == 0
+        -- else
+        --     -- print("pres: "..name)
             return cd > 0
-        end
+        -- end
     end
 end
 
-function Roids.ValidatePlayerAura(auta_data,debuff,check_absence)
+function Roids.ValidatePlayerAura(auta_data,debuff)
     local limit,amount
     local name = auta_data
     if type(auta_data) == "table" then
@@ -354,6 +357,7 @@ function Roids.ValidatePlayerAura(auta_data,debuff,check_absence)
             bid = (bid < -1) and bid + 65536 or bid
             if SpellInfo(bid) == name then
                 rem = GetPlayerBuffTimeLeft(aura_ix)
+                break
             end
         end
     until aura_ix == -1
@@ -363,7 +367,7 @@ function Roids.ValidatePlayerAura(auta_data,debuff,check_absence)
     elseif limit == 0 then
         return rem <= amount
     elseif limit == nil then
-        return check_absence and (aura_ix == -1) or (aura_ix ~= -1)
+        return (aura_ix ~= -1)
     end
 end
 
@@ -417,25 +421,6 @@ function Roids.GetInventoryCooldownByName(itemName)
             end
         end
     end
-
-    -- RoidsTooltip:SetOwner(UIParent, "ANCHOR_NONE");
-    -- for i=0, 19 do
-    --     RoidsTooltip:ClearLines();
-    --     hasItem = RoidsTooltip:SetInventoryItem("player", i);
-        
-    --     if hasItem then
-    --         local lines = RoidsTooltip:NumLines();
-            
-    --         local label = getglobal("RoidsTooltipTextLeft1");
-            
-    --         if label:GetText() == itemName then
-    --             local start, duration = GetInventoryItemCooldown("player", i);
-    --             -- return duration;
-    --             return duration, start
-    --         end
-    --     end
-    -- end
-    
     return nil;
 end
 
@@ -454,22 +439,25 @@ function Roids.GetContainerItemCooldownByName(itemName)
             end
         end
     end
-
-    -- RoidsTooltip:SetOwner(WorldFrame, "ANCHOR_NONE");
-    
-    -- for i = 0, 4 do
-    --     for j = 1, GetContainerNumSlots(i) do
-    --         RoidsTooltip:ClearLines();
-    --         RoidsTooltip:SetBagItem(i, j);
-    --         if RoidsTooltipTextLeft1:GetText() == itemName then
-    --             local start, duration = GetContainerItemCooldown(i, j);
-    --             -- return duration;
-    --             return duration,start
-    --         end
-    --     end
-    -- end
-
     return nil;
+end
+
+local function And(t,func)
+    for k,v in pairs(t) do
+        if not func(v) then
+            return false
+        end
+    end
+    return true
+end
+
+local function Or(t,func)
+    for k,v in pairs(t) do
+        if func(v) then
+            return true
+        end
+    end
+    return false
 end
 
 -- A list of Conditionals and their functions to validate them
@@ -483,16 +471,12 @@ Roids.Keywords = {
     end,
     
     stance = function(conditionals)
-        for _,stances in pairs(conditionals.stance) do
-            -- print(stances)
-            for k,v in pairs(Roids.splitString(stances, "/")) do
-                -- print(v)
-                if Roids.GetCurrentShapeshiftIndex() == tonumber(v) then
-                    return true
-                end
-            end
-        end
-        return false
+        return And(conditionals.stance,function (stances)
+            return Or(Roids.splitString(stances, "/"), function (v)
+                return (Roids.GetCurrentShapeshiftIndex() == tonumber(v))
+            end)
+        end)
+        -- return false
     end,
     
     mod = function(conditionals)
@@ -576,22 +560,11 @@ Roids.Keywords = {
     end,
 
     equipped = function(conditionals)
-        for _,equips in pairs(conditionals.equipped) do
-            for k,v in pairs(Roids.splitString(equips, "/")) do
-                if Roids.HasGearEquipped(v) or Roids.HasWeaponEquipped(v) then
-                    return true
-                end
-            end
-        end
-        return false
-        -- local isEquipped = false
-        -- for k,v in pairs(Roids.splitString(conditionals.equipped, "/")) do
-        --     if Roids.HasGearEquipped(v) or Roids.HasWeaponEquipped(v) then
-        --         isEquipped = true
-        --         break
-        --     end
-        -- end
-        -- return isEquipped
+        return And(conditionals.equipped,function (equips)
+            return Or(Roids.splitString(equips, "/"), function (v)
+                return (Roids.HasWeaponEquipped(v) or Roids.HasGearEquipped(v))
+            end)
+        end)
     end,
 
     dead = function(conditionals)
@@ -624,168 +597,88 @@ Roids.Keywords = {
     end,
 
     buff = function(conditionals)
-        for _,v in pairs(conditionals.buff) do
-            if not Roids.HasBuffName(v, conditionals.target) then
-                return false
-            end
-        end
-        return true
-        -- return Roids.HasBuffName(conditionals.buff, conditionals.target);
+        return And(conditionals.buff,function (v) return Roids.HasBuffName(v, conditionals.target) end)
     end,
 
     nobuff = function(conditionals)
-        for _,v in pairs(conditionals.nobuff) do
-            if Roids.HasBuffName(v, conditionals.target) then
-                return false
-            end
-        end
-        return true
-        -- return not Roids.HasBuffName(conditionals.nobuff, conditionals.target);
+        return And(conditionals.nobuff,function (v) return not Roids.HasBuffName(v, conditionals.target) end)
     end,
 
     debuff = function(conditionals)
-        for _,v in pairs(conditionals.debuff) do
-            if not Roids.HasDeBuffName(v, conditionals.target) then
-                return false
-            end
-        end
-        return true
-        -- return Roids.HasDeBuffName(conditionals.debuff, conditionals.target);
+        return And(conditionals.debuff,function (v) return Roids.HasDeBuffName(v, conditionals.target) end)
     end,
 
     nodebuff = function(conditionals)
-        for _,v in pairs(conditionals.nodebuff) do
-            if Roids.HasDeBuffName(v, conditionals.target) then
-                return false
-            end
-        end
-        return true
-        -- return not Roids.HasDeBuffName(conditionals.nodebuff, conditionals.target);
+        return And(conditionals.nodebuff,function (v) return not Roids.HasDeBuffName(v, conditionals.target) end)
     end,
 
     mybuff = function(conditionals)
-        for k,v in pairs(conditionals.mybuff) do
-            if not Roids.ValidatePlayerAura(v,false,false) then
-                return false
-            end
-        end
-        return true
-        -- return Roids.HasBuffName(conditionals.mybuff, "player");
+        return And(conditionals.mybuff,function (v) return Roids.ValidatePlayerAura(v,false) end)
     end,
 
     nomybuff = function(conditionals)
-        for k,v in pairs(conditionals.nomybuff) do
-            if Roids.ValidatePlayerAura(v,false,true) then
-                return false
-            end
-        end
-        return true
-        -- return not Roids.HasBuffName(conditionals.nomybuff, "player");
+        return And(conditionals.nomybuff,function (v) return not Roids.ValidatePlayerAura(v,false) end)
     end,
 
     mydebuff = function(conditionals)
-        for k,v in pairs(conditionals.mydebuff) do
-            if not Roids.ValidatePlayerAura(v,true,false) then
-                return false
-            end
-        end
-        return true
-        -- return Roids.HasDeBuffName(conditionals.mydebuff, "player");
+        return And(conditionals.mydebuff,function (v) return Roids.ValidatePlayerAura(v,true) end)
     end,
 
     nomydebuff = function(conditionals)
-        for k,v in pairs(conditionals.nomydebuff) do
-            if Roids.ValidatePlayerAura(v,true,true) then
-                return false
-            end
-        end
-        return true
-        -- return not Roids.HasDeBuffName(conditionals.nomydebuff, "player");
+        return And(conditionals.nomydebuff,function (v) return not Roids.ValidatePlayerAura(v,true) end)
     end,
     
     power = function(conditionals)
-        for _,v in pairs(conditionals.mypower) do
-            if not Roids.ValidatePower(conditionals.target, v.bigger, v.amount) then
-                return false
-            end
-        end
-        return true
-        -- return Roids.ValidatePower(conditionals.target, conditionals.power.bigger, conditionals.power.amount);
+        return And(conditionals.power,function (v) return Roids.ValidatePower(conditionals.target, v.bigger, v.amount) end)
     end,
     
     mypower = function(conditionals)
-        for _,v in pairs(conditionals.mypower) do
-            if not Roids.ValidatePower("player", v.bigger, v.amount) then
-                return false
-            end
-        end
-        return true
-        -- return Roids.ValidatePower("player", conditionals.mypower.bigger, conditionals.mypower.amount);
+        return And(conditionals.mypower,function (v) return Roids.ValidatePower("player", v.bigger, v.amount) end)
     end,
     
     rawpower = function(conditionals)
-        for _,v in pairs(conditionals.rawpower) do
-            if not Roids.ValidateRawPower(conditionals.target, v.bigger, v.amount) then
-                return false
-            end
-        end
-        return true
-        -- return Roids.ValidateRawPower(conditionals.target, conditionals.rawpower.bigger, conditionals.rawpower.amount);
+        return And(conditionals.rawpower,function (v) return Roids.ValidateRawPower(conditionals.target, v.bigger, v.amount) end)
     end,
     
     myrawpower = function(conditionals)
-        for _,v in pairs(conditionals.myrawpower) do
-            if not Roids.ValidateRawPower("player", v.bigger, v.amount) then
-                return false
-            end
-        end
-        return true
-        -- return Roids.ValidateRawPower("player", conditionals.myrawpower.bigger, conditionals.myrawpower.amount);
+        return And(conditionals.myrawpower,function (v) return Roids.ValidateRawPower("player", v.bigger, v.amount) end)
     end,
     
     hp = function(conditionals)
-        for _,v in pairs(conditionals.hp) do
-            if not Roids.ValidateHp(conditionals.target, v.bigger, v.amount) then
-                return false
-            end
-        end
-        return true
-        -- return Roids.ValidateHp(conditionals.target, conditionals.hp.bigger, conditionals.hp.amount);
+        -- print(conditionals.target)
+        return And(conditionals.hp,function (v) return Roids.ValidateHp(conditionals.target, v.bigger, v.amount) end)
     end,
     
     myhp = function(conditionals)
-        for _,v in pairs(conditionals.myhp) do
-            if not Roids.ValidateHp("player", v.bigger, v.amount) then
-                return false
-            end
-        end
-        return true
-        -- return Roids.ValidateHp("player", conditionals.myhp.bigger, conditionals.myhp.amount);
+        return And(conditionals.myhp,function (v) return Roids.ValidateHp("player", v.bigger, v.amount) end)
     end,
     
+    -- TODO allow multiple types
     type = function(conditionals)
         return Roids.ValidateCreatureType(conditionals.type, conditionals.target);
     end,
     
     cooldown = function(conditionals)
-        for k,v in pairs(conditionals.cooldown) do
-            if not Roids.ValidateCooldown(v,false) then
-                return false
-            end
-        end
-        return true
+        return And(conditionals.cooldown,function (v) return Roids.ValidateCooldown(v,false) end)
+        -- for k,v in pairs(conditionals.cooldown) do
+        --     if not Roids.ValidateCooldown(v,false) then
+        --         return false
+        --     end
+        -- end
+        -- return true
     end,
     
     nocooldown = function(conditionals)
-        for k,v in pairs(conditionals.nocooldown) do
-            -- print("nocooldown: "..k.." "..v)
-            if not Roids.ValidateCooldown(v,true) then
-                -- print(k)
-                -- print(v)
-                return false
-            end
-        end
-        return true
+        return And(conditionals.nocooldown,function (v) return not Roids.ValidateCooldown(v,false) end)
+        -- for k,v in pairs(conditionals.nocooldown) do
+        --     -- print("nocooldown: "..k.." "..v)
+        --     if not Roids.ValidateCooldown(v,true) then
+        --         -- print(k)
+        --         -- print(v)
+        --         return false
+        --     end
+        -- end
+        -- return true
         -- local name = string.gsub(conditionals.nocooldown, "_", " ");
         -- local cd = Roids.GetSpellCooldownByName(name);
         -- if not cd then cd = Roids.GetInventoryCooldownByName(name); end

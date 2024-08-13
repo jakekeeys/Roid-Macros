@@ -4,7 +4,7 @@
 ## Notes: Vanilla macros on steroids!
 ## Title-deDE: Roid Macros
 ## Notes-deDE: Vanilla Macros auf Steroide!
-## OptionalDeps: ClassicFocus, FocusFrame
+## OptionalDeps: ClassicFocus, FocusFrame, pfUI, SuperMacro
 Widgets.xml
 Localization.lua
 Utility.lua

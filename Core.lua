@@ -289,8 +289,8 @@ function Roids.DoWithConditionals(msg, hook, fixEmptyTargetFunc, targetBeforeAct
             return false;
         end
     end
-    
-    if conditionals.target ~= nil and targetBeforeAction then
+
+    if conditionals.target ~= nil and targetBeforeAction and not (has_superwow and action == CastSpellByName) then
         if not UnitIsUnit("target", conditionals.target) then
             needRetarget = true;
         end
@@ -315,13 +315,13 @@ function Roids.DoWithConditionals(msg, hook, fixEmptyTargetFunc, targetBeforeAct
             result = Roids.ExecuteMacroByName(string.sub(msg, 2, -2));
         end
     else
-        if has_superwow and action == CastSpellByName then
+        if has_superwow and action == CastSpellByName and conditionals.target then
             action(msg,conditionals.target);
         else
             action(msg);
         end
     end
-    
+
     if needRetarget then
         TargetLastTarget();
     end
@@ -537,9 +537,11 @@ Roids.Frame:RegisterEvent("SPELLCAST_INTERRUPTED");
 Roids.Frame:RegisterEvent("SPELLCAST_FAILED");
 Roids.Frame:RegisterEvent("PLAYER_ENTER_COMBAT");
 Roids.Frame:RegisterEvent("PLAYER_LEAVE_COMBAT");
+-- Roids.Frame:RegisterEvent("PLAYER_REGEN_ENABLED");
+Roids.Frame:RegisterEvent("PLAYER_TARGET_CHANGED");
 Roids.Frame:RegisterEvent("START_AUTOREPEAT_SPELL");
 Roids.Frame:RegisterEvent("STOP_AUTOREPEAT_SPELL");
-Roids.Frame:RegisterEvent("UI_ERROR_MESSAGE");
+-- Roids.Frame:RegisterEvent("UI_ERROR_MESSAGE");
 
 Roids.Frame:SetScript("OnEvent", function()
     Roids.Frame[event]();
@@ -558,6 +560,8 @@ function Roids.Frame.ADDON_LOADED()
     if arg1 ~= "SuperMacro" then
         return;
     end
+
+    -- TODO we should scan our bags here to ensure our items are in the WDB 
     
     local hooks = {
         cast = { action = Roids.DoCast, },
@@ -602,18 +606,31 @@ Roids.Frame.SPELLCAST_INTERRUPTED = Roids.Frame.SPELLCAST_CHANNEL_STOP;
 Roids.Frame.SPELLCAST_FAILED = Roids.Frame.SPELLCAST_CHANNEL_STOP;
 
 function Roids.Frame.UI_ERROR_MESSAGE()
-    if arg1 == ERR_NO_ATTACK_TARGET or string.find(string.lower(arg1), "^Can't attack") or arg1 == ERR_INVALID_ATTACK_TARGET then
-        Roids.CurrentSpell.autoAttack = false
-    end
+--     if arg1 == ERR_NO_ATTACK_TARGET or string.find(string.lower(arg1), "^Can't attack") or arg1 == ERR_INVALID_ATTACK_TARGET then
+--         Roids.CurrentSpell.autoAttack = false
+--     end
 end
 
 function Roids.Frame.PLAYER_ENTER_COMBAT()
     Roids.CurrentSpell.autoAttack = true;
+    Roids.CurrentSpell.autoAttackLock = false
 end
 
 function Roids.Frame.PLAYER_LEAVE_COMBAT()
     Roids.CurrentSpell.autoAttack = false;
+    Roids.CurrentSpell.autoAttackLock = false
 end
+
+-- just a secondary check, shouldn't matter much
+function Roids.Frame.PLAYER_TARGET_CHANGED()
+    Roids.CurrentSpell.autoAttack = false;
+    Roids.CurrentSpell.autoAttackLock = false
+end
+
+-- just a secondary check
+-- function Roids.Frame.PLAYER_REGEN_ENABLED()
+--     Roids.CurrentSpell.autoAttack = false;
+-- end
 
 function Roids.Frame.START_AUTOREPEAT_SPELL(...)
     local _, className = UnitClass("player");

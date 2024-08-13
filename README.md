@@ -3,7 +3,10 @@
 ### Customized for Weird Vibes:  
 * Uses SuperWoW (if available) to avoid target swaps
 * Empowers `/starattack` to avoid delaying OH swings when dual weilding
+* `mybuff`, `mydebuff`, and `cooldown` all allow using `<`/`>` in the same way that `mypower` does
 * Allows item id's to be used in macros instead of names, to shorted them
+* New `zone`/`nozone` conditional, e.g.: `[zone:Naxxramas] [nozone:Orgrimmar]`
+* `/use` can cast spells as well for mixing item use and spells together in macros, prefer `/cast` when you can for better performance.
 * Allows limited nesting of macros:
 ```
 /run -- CastSpellByName("Taunt")
@@ -15,6 +18,11 @@
 /cast [equipped:Heartstriker/22811] Shoot Bow
 /cast [equipped:Badge_Of_The_Swarmguard nocooldown:Death_Wish] Death Wish;Bloodthirst
 ```
+* Expanded most conditionals to allow for multipe of the same type, for tigher control:
+```
+/cast [mypower>30 mypower<60 nocooldown:Bloodthirst] Bloodthirst
+```
+
 
 ---
 
