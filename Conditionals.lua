@@ -547,7 +547,7 @@ Roids.Keywords = {
 
     nozone = function(conditionals)
         local zone = string.lower(GetRealZoneText())
-        for _,zones in pairs(conditionals.zone) do
+        for _,zones in pairs(conditionals.nozone) do
             local zones = string.gsub(zones, "_", " ");
             for k,v in pairs(Roids.splitString(zones, "/")) do
                 -- print(v .. " " .. zone)
