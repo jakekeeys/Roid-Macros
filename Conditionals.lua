@@ -302,9 +302,15 @@ end
 -- returns: True or false
 -- remarks: Allows for both localized and unlocalized type names
 function Roids.ValidateCreatureType(creatureType, target)
+    local ct = string.lower(creatureType)
+    local cl = UnitClassification(target)
+    if (ct == "boss" and "worldboss" or ct) == cl then
+        return true
+    end
+    if string.lower(creatureType) == "boss" then creatureType = "worldboss" end
     local targetType = UnitCreatureType(target);
     local englishType = Roids.Localized.CreatureTypes[targetType];
-    return creatureType == targetType or creatureType == englishType;
+    return string.lower(creatureType) == string.lower(targetType) or creatureType == englishType;
 end
 
 function Roids.ValidateCooldown(cooldown_data,check_absence)
@@ -321,18 +327,14 @@ function Roids.ValidateCooldown(cooldown_data,check_absence)
     if not cd then cd,start = Roids.GetInventoryCooldownByName(name) end
     if not cd then cd,start = Roids.GetContainerItemCooldownByName(name) end
 
+    -- ignore the gcd if possible?
+    -- if cd == 1.5 then return false end
     if limit == 1 and start ~= 0 then
         return (start + cd - GetTime()) >= amount
     elseif limit == 0 then
         return (start + cd - GetTime()) <= amount
     elseif limit == nil then
-        -- if check_absence then
-        --     -- print("ab: "..name)
-        --     return cd == 0
-        -- else
-        --     -- print("pres: "..name)
-            return cd > 0
-        -- end
+        return cd > 0
     end
 end
 
@@ -533,30 +535,18 @@ Roids.Keywords = {
 
     zone = function(conditionals)
         local zone = string.lower(GetRealZoneText())
-        for _,zones in pairs(conditionals.zone) do
-            local zones = string.gsub(zones, "_", " ");
-            for k,v in pairs(Roids.splitString(zones, "/")) do
-                -- print(v .. " " .. zone)
-                if string.lower(v) == zone then
-                    return true
-                end
-            end
-        end
-        return false
+        local sub_zone = string.lower(GetSubZoneText())
+        return And(conditionals.zone,function (v)
+            return (sub_zone ~= "" and (string.lower(v) == sub_zone)) or (string.lower(v) == zone)
+        end)
     end,
 
     nozone = function(conditionals)
         local zone = string.lower(GetRealZoneText())
-        for _,zones in pairs(conditionals.nozone) do
-            local zones = string.gsub(zones, "_", " ");
-            for k,v in pairs(Roids.splitString(zones, "/")) do
-                -- print(v .. " " .. zone)
-                if string.lower(v) == zone then
-                    return false
-                end
-            end
-        end
-        return true
+        local sub_zone = string.lower(GetSubZoneText())
+        return And(conditionals.nozone,function (v)
+            return not ((sub_zone ~= "" and (string.lower(v) == sub_zone)) or (string.lower(v) == zone))
+        end)
     end,
 
     equipped = function(conditionals)
@@ -645,7 +635,6 @@ Roids.Keywords = {
     end,
     
     hp = function(conditionals)
-        -- print(conditionals.target)
         return And(conditionals.hp,function (v) return Roids.ValidateHp(conditionals.target, v.bigger, v.amount) end)
     end,
     
@@ -655,35 +644,15 @@ Roids.Keywords = {
     
     -- TODO allow multiple types
     type = function(conditionals)
-        return Roids.ValidateCreatureType(conditionals.type, conditionals.target);
+        return And(conditionals.type, function (v) return Roids.ValidateCreatureType(v, conditionals.target) end)
     end,
     
     cooldown = function(conditionals)
         return And(conditionals.cooldown,function (v) return Roids.ValidateCooldown(v,false) end)
-        -- for k,v in pairs(conditionals.cooldown) do
-        --     if not Roids.ValidateCooldown(v,false) then
-        --         return false
-        --     end
-        -- end
-        -- return true
     end,
     
     nocooldown = function(conditionals)
         return And(conditionals.nocooldown,function (v) return not Roids.ValidateCooldown(v,false) end)
-        -- for k,v in pairs(conditionals.nocooldown) do
-        --     -- print("nocooldown: "..k.." "..v)
-        --     if not Roids.ValidateCooldown(v,true) then
-        --         -- print(k)
-        --         -- print(v)
-        --         return false
-        --     end
-        -- end
-        -- return true
-        -- local name = string.gsub(conditionals.nocooldown, "_", " ");
-        -- local cd = Roids.GetSpellCooldownByName(name);
-        -- if not cd then cd = Roids.GetInventoryCooldownByName(name); end
-        -- if not cd then cd = Roids.GetContainerItemCooldownByName(name) end
-        -- return cd == 0;
     end,
     
     channeled = function(conditionals)

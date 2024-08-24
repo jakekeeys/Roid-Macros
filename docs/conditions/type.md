@@ -17,6 +17,10 @@ These CreatureTypeIds are available:
 * Not_Specified
 * Totem
 * Undead
+* Worldboss (any boss has this type)
+* Boss (same as worldboss)
+* Elite
+* Normal (as in not elite)
 
 You may also use your respective localized names instead.
 

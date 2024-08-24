@@ -107,7 +107,7 @@ function Roids.parseMsg(msg)
         conditionals.checkchanneled = msg;
     end
 
-    local pattern = "(@?%w+:?>?<?%w*[><:'_?%-?%w*]*[/?_?%w*]*)";
+    local pattern = "(@?%w+:?>?<?%w*[><:'_?%-?%w*]*[/?_?%w*.?]*)";
     -- print(modifier)
     for w in string.gfind(modifier, pattern) do
         local delimeter, which = Roids.FindDelimeter(w);
@@ -122,7 +122,7 @@ function Roids.parseMsg(msg)
             -- print("rest "..rest)
             if which then
                 -- print("condwhich1 "..which.." "..conditional)
-                table.insert(conditionals[conditional], { bigger = which, amount = string.sub(w, delimeter + 1) })
+                table.insert(conditionals[conditional], { bigger = which, amount = tonumber(string.sub(w, delimeter + 1)) })
                 -- conditionals[conditional] = { bigger = which, amount = string.sub(w, delimeter + 1) };
             else
                 -- conditionals[conditional] = rest;
@@ -130,7 +130,7 @@ function Roids.parseMsg(msg)
                 delimeter, which = Roids.FindDelimeter(rest);
                 if delimeter then
                     local conditional2 = string.sub(rest, 1, delimeter - 1);
-                    local rest2 = string.sub(rest, delimeter+1);
+                    local rest2 = tonumber(string.sub(rest, delimeter+1));
                     -- print("cond "..conditional2)
                     -- print("rest "..rest2)
                     -- print("rest "..delimeter)
@@ -334,8 +334,8 @@ end
 function Roids.DoCast(msg)
     local handled = false;
     msg = Roids.Trim(msg);
-    
-    for k, v in pairs(Roids.splitString(msg, ";%s*")) do
+
+    for k, v in pairs(Roids.splitStringIgnoringQuotes(msg)) do
         if Roids.DoWithConditionals(v, Roids.Hooks.CAST_SlashCmd, Roids.FixEmptyTarget, not has_superwow, CastSpellByName) then
             handled = true; -- we parsed at least one command
             break;
@@ -357,7 +357,7 @@ function Roids.DoTarget(msg)
         Roids.Hooks.TARGET_SlashCmd(msg);
     end
     
-    for k, v in pairs(Roids.splitString(msg, ";%s*")) do
+    for k, v in pairs(Roids.splitStringIgnoringQuotes(msg)) do
         if Roids.DoWithConditionals(v, Roids.Hooks.TARGET_SlashCmd, Roids.FixEmptyTargetSetTarget, false, action) then
             handled = true;
             break;
@@ -370,7 +370,7 @@ end
 -- msg: The raw message intercepted from a /petattack command
 function Roids.DoPetAttack(msg)
     local handled = false;
-    for k, v in pairs(Roids.splitString(msg, ";%s*")) do
+    for k, v in pairs(Roids.splitStringIgnoringQuotes(msg)) do
         if Roids.DoWithConditionals(v, nil, Roids.FixEmptyTarget, not has_superwow, PetAttack) then
             handled = true;
             break;
@@ -459,7 +459,7 @@ function Roids.DoUse(msg)
         UseContainerItem(bag, slot);
     end
 
-    for k, v in pairs(Roids.splitString(msg, ";%s*")) do
+    for k, v in pairs(Roids.splitStringIgnoringQuotes(msg)) do
         if Roids.DoWithConditionals(v, action, Roids.FixEmptyTarget, not has_superwow, action) then
             handled = true;
             break;
@@ -480,7 +480,7 @@ function Roids.DoEquipOffhand(msg)
         PickupInventoryItem(17);
     end
     
-    for k, v in pairs(Roids.splitString(msg, ";%s*")) do
+    for k, v in pairs(Roids.splitStringIgnoringQuotes(msg)) do
         if Roids.DoWithConditionals(v, action, Roids.FixEmptyTarget, not has_superwow, action) then
             handled = true;
             break;
@@ -499,7 +499,7 @@ function Roids.DoUnshift(msg)
         end
     end
     
-    for k, v in pairs(Roids.splitString(msg, ";%s*")) do
+    for k, v in pairs(Roids.splitStringIgnoringQuotes(msg)) do
         handled = false;
         if Roids.DoWithConditionals(v, action, Roids.FixEmptyTarget, not has_superwow, action) then
             handled = true;
