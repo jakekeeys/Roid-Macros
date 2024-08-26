@@ -313,6 +313,7 @@ function Roids.ValidateCreatureType(creatureType, target)
     return string.lower(creatureType) == string.lower(targetType) or creatureType == englishType;
 end
 
+-- this should technically keep a table of cooldowns it's seen and when, in case of something like GetContainerItemCooldownByName and you run out of the item
 function Roids.ValidateCooldown(cooldown_data)
     local limit,amount
     local name = cooldown_data
@@ -326,6 +327,7 @@ function Roids.ValidateCooldown(cooldown_data)
     local cd,start = Roids.GetSpellCooldownByName(name)
     if not cd then cd,start = Roids.GetInventoryCooldownByName(name) end
     if not cd then cd,start = Roids.GetContainerItemCooldownByName(name) end
+    -- if not cd then cd = 0 end
 
     -- ignore the gcd if possible?
     -- if cd == 1.5 then return false end
@@ -647,11 +649,11 @@ Roids.Keywords = {
     end,
     
     cooldown = function(conditionals)
-        return And(conditionals.cooldown,Roids.ValidateCooldown)
+        return And(conditionals.cooldown,function (v) return Roids.ValidateCooldown(v) end)
     end,
     
     nocooldown = function(conditionals)
-        return And(conditionals.nocooldown,Roids.ValidateCooldown)
+        return And(conditionals.nocooldown,function (v) return not Roids.ValidateCooldown(v) end)
     end,
     
     channeled = function(conditionals)
