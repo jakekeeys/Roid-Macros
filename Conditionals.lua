@@ -313,7 +313,7 @@ function Roids.ValidateCreatureType(creatureType, target)
     return string.lower(creatureType) == string.lower(targetType) or creatureType == englishType;
 end
 
-function Roids.ValidateCooldown(cooldown_data,check_absence)
+function Roids.ValidateCooldown(cooldown_data)
     local limit,amount
     local name = cooldown_data
     if type(cooldown_data) == "table" then
@@ -478,7 +478,6 @@ Roids.Keywords = {
                 return (Roids.GetCurrentShapeshiftIndex() == tonumber(v))
             end)
         end)
-        -- return false
     end,
     
     mod = function(conditionals)
@@ -648,11 +647,11 @@ Roids.Keywords = {
     end,
     
     cooldown = function(conditionals)
-        return And(conditionals.cooldown,function (v) return Roids.ValidateCooldown(v,false) end)
+        return And(conditionals.cooldown,Roids.ValidateCooldown)
     end,
     
     nocooldown = function(conditionals)
-        return And(conditionals.nocooldown,function (v) return not Roids.ValidateCooldown(v,false) end)
+        return And(conditionals.nocooldown,Roids.ValidateCooldown)
     end,
     
     channeled = function(conditionals)

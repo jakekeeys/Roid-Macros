@@ -46,6 +46,7 @@ function Roids.splitStringIgnoringQuotes(str)
             insideQuotes = not insideQuotes
             temp = temp .. char
         elseif char == ";" and not insideQuotes then
+            temp = Roids.Trim(temp)
             table.insert(result, temp)
             temp = ""
         else
@@ -55,6 +56,7 @@ function Roids.splitStringIgnoringQuotes(str)
 
     -- Add the last segment if it exists
     if temp ~= "" then
+        temp = Roids.Trim(temp)
         table.insert(result, temp)
     end
 

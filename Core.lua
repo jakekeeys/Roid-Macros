@@ -336,6 +336,7 @@ function Roids.DoCast(msg)
     msg = Roids.Trim(msg);
 
     for k, v in pairs(Roids.splitStringIgnoringQuotes(msg)) do
+    -- for k, v in pairs(Roids.splitString(msg,";%s*")) do
         if Roids.DoWithConditionals(v, Roids.Hooks.CAST_SlashCmd, Roids.FixEmptyTarget, not has_superwow, CastSpellByName) then
             handled = true; -- we parsed at least one command
             break;
