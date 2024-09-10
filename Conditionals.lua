@@ -116,6 +116,62 @@ function Roids.HasDeBuffName(buffName, unit)
     return CheckAura(buffName,false,unit) or CheckAura(buffName,true,unit)
 end
 
+function Roids.ValidateAura(aura_data, isbuff, unit)
+    local limit,amount
+    local name = aura_data
+    if type(aura_data) == "table" then
+        limit = aura_data.bigger
+        _,_,amount = string.find(aura_data.amount,"^#(%d+)") -- TODO check this for sunder
+        name = aura_data.name
+        amount = tonumber(amount or aura_data.amount)
+        if not amount then
+            print("malformed buff/debuff check")
+            return false -- TODO, is this ok?
+        end
+    end
+    name = string.gsub(name, "_", " ")
+
+    local stack_count = 0
+    if not isbuff then
+        -- search debuffs
+        local i = 1
+        local id = 0
+        while id do
+            _,stacks,_,id = UnitDebuff(unit,i)
+            if id and id < -1 then id = id + 65536 end
+            if name == SpellInfo(id) then
+                stack_count = stacks
+                break
+            end
+            i = i + 1
+        end
+    end
+    if stack_count == 0 then
+        -- not found? search buffs then too
+        local i = 1
+        local id = 0
+        while id do
+            _,stacks,id = UnitBuff(unit,i)
+            if id and id < -1 then id = id + 65536 end
+            if name == SpellInfo(id) then
+                stack_count = stacks
+                break
+            end
+            i = i + 1
+        end
+    end
+
+    if limit == 1 and stack_count > amount then
+        return true
+    elseif limit == 0 and stack_count < amount then
+        return true
+    elseif limit == nil and stack_count == amount then
+        return true
+    else
+        return false
+    end
+end
+
 -- Checks whether or not the given textureName is present in the current player's buff bar
 -- textureName: The full name (including path) of the texture
 -- returns: True if the texture can be found, false otherwhise
@@ -302,6 +358,7 @@ end
 -- returns: True or false
 -- remarks: Allows for both localized and unlocalized type names
 function Roids.ValidateCreatureType(creatureType, target)
+    if not target then return false end
     local ct = string.lower(creatureType)
     local cl = UnitClassification(target)
     if (ct == "boss" and "worldboss" or ct) == cl then
@@ -464,6 +521,34 @@ local function Or(t,func)
     return false
 end
 
+local reactives = {
+    ["interface\\icons\\ability_warrior_revenge"] = "revenge", -- war
+    ["interface\\icons\\ability_meleedamage"] = "overpower", -- war
+    ["interface\\icons\\ability_warrior_challange"] = "riposte", -- rogue
+    ["interface\\icons\\ability_hunter_swiftstrike"] = "mongoose bite", -- hunter
+    ["interface\\icons\\ability_warrior_challange"] = "counterattack", -- hunter
+}
+
+function CheckReactiveAbility(spellName)
+    for actionSlot = 1, 120 do
+        local tex = GetActionTexture(actionSlot)
+        if tex then
+            spellName = string.lower(spellName)
+            tex = string.lower(tex)
+            for spell,spell_texture in pairs(reactives) do
+                if reactives[tex] == spellName then
+                    local isUsable = IsUsableAction(actionSlot)
+                    local start, duration = GetActionCooldown(actionSlot)
+                    if isUsable and (start == 0 or duration == 1.5) then -- 1.5 just means gcd is active
+                        return true
+                    end
+                end
+            end
+        end
+    end
+    return false
+end
+
 -- A list of Conditionals and their functions to validate them
 Roids.Keywords = {
     help = function(conditionals)
@@ -562,6 +647,18 @@ Roids.Keywords = {
         return UnitIsDeadOrGhost(conditionals.target);
     end,
 
+    reactive = function(conditionals)
+        return And(conditionals.reactive,function (v)
+            return CheckReactiveAbility(v)
+        end)
+    end,
+
+    noreactive = function(conditionals)
+        return And(conditionals.noreactive,function (v)
+            return not CheckReactiveAbility(v)
+        end)
+    end,
+
     nodead = function(conditionals)
         return not UnitIsDeadOrGhost(conditionals.target);
     end,
@@ -588,7 +685,8 @@ Roids.Keywords = {
     end,
 
     buff = function(conditionals)
-        return And(conditionals.buff,function (v) return Roids.HasBuffName(v, conditionals.target) end)
+        return And(conditionals.debuff,function (v) return Roids.ValidateAura(v, true, conditionals.target) end)
+        -- return And(conditionals.buff,function (v) return Roids.HasBuffName(v, conditionals.target) end)
     end,
 
     nobuff = function(conditionals)
@@ -596,11 +694,11 @@ Roids.Keywords = {
     end,
 
     debuff = function(conditionals)
-        return And(conditionals.debuff,function (v) return Roids.HasDeBuffName(v, conditionals.target) end)
+        return And(conditionals.debuff,function (v) return Roids.ValidateAura(v, false, conditionals.target) end)
     end,
 
     nodebuff = function(conditionals)
-        return And(conditionals.nodebuff,function (v) return not Roids.HasDeBuffName(v, conditionals.target) end)
+        return And(conditionals.nobuff,function (v) return not Roids.HasDeBuffName(v, conditionals.target) end)
     end,
 
     mybuff = function(conditionals)

@@ -32,3 +32,9 @@ Will cast Healing Wave on yourself only while Blood Fury is active.
 ```
 
 Will cast Healing Wave on yourself as long as Curse of Weakness is active.
+
+```lua
+/cast [debuff:Sunder_Armor<#5] Sunder Armor;Hamstring
+```
+
+Will cast Sunder Armor if there's less than 5 stacks, and hamstring otherwise.

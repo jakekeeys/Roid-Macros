@@ -7,6 +7,7 @@
 * Allows item id's to be used in macros instead of names, to shorted them
 * New `zone`/`nozone` conditional, e.g.: `[zone:Naxxramas] [nozone:Orgrimmar]`
 * `/use` can cast spells as well for mixing item use and spells together in macros, prefer `/cast` when you can for better performance.
+* new `reactive`/`noreactive` conditional for detecting when things like Revenge are active. (Requires a bare Revenge on actionbars somewhere.)
 * Allows limited nesting of macros:
 ```
 /run -- CastSpellByName("Taunt")
@@ -22,7 +23,6 @@
 ```
 /cast [mypower>30 mypower<60 nocooldown:Bloodthirst] Bloodthirst
 ```
-
 
 ---
 

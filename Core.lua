@@ -107,7 +107,7 @@ function Roids.parseMsg(msg)
         conditionals.checkchanneled = msg;
     end
 
-    local pattern = "(@?%w+:?>?<?%w*[><:'_?%-?%w*]*[/?_?%w*.?]*)";
+    local pattern = "(@?%w+:?>?<?%w*[><:'_?%-?%w*]*[#/?_?%w*.?]*)";
     -- print(modifier)
     for w in string.gfind(modifier, pattern) do
         local delimeter, which = Roids.FindDelimeter(w);
@@ -130,7 +130,7 @@ function Roids.parseMsg(msg)
                 delimeter, which = Roids.FindDelimeter(rest);
                 if delimeter then
                     local conditional2 = string.sub(rest, 1, delimeter - 1);
-                    local rest2 = tonumber(string.sub(rest, delimeter+1));
+                    local rest2 = string.sub(rest, delimeter+1);
                     -- print("cond "..conditional2)
                     -- print("rest "..rest2)
                     -- print("rest "..delimeter)
