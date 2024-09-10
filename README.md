@@ -23,6 +23,10 @@
 ```
 /cast [mypower>30 mypower<60 nocooldown:Bloodthirst] Bloodthirst
 ```
+* Allows querying for stack infomation, `#` signifies you want a quantity instead of a duration:
+```
+/cast [stance:1/3 type:boss debuff:Sunder_Armor<#5]Sunder Armor;Bloodthirst
+```
 
 ---
 
