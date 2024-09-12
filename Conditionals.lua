@@ -685,7 +685,7 @@ Roids.Keywords = {
     end,
 
     buff = function(conditionals)
-        return And(conditionals.debuff,function (v) return Roids.ValidateAura(v, true, conditionals.target) end)
+        return And(conditionals.buff,function (v) return Roids.ValidateAura(v, true, conditionals.target) end)
         -- return And(conditionals.buff,function (v) return Roids.HasBuffName(v, conditionals.target) end)
     end,
 
@@ -698,7 +698,7 @@ Roids.Keywords = {
     end,
 
     nodebuff = function(conditionals)
-        return And(conditionals.nobuff,function (v) return not Roids.HasDeBuffName(v, conditionals.target) end)
+        return And(conditionals.nodebuff,function (v) return not Roids.HasDeBuffName(v, conditionals.target) end)
     end,
 
     mybuff = function(conditionals)
