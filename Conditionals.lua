@@ -65,7 +65,7 @@ function Roids.CancelAura(auraName)
         if aura_ix == -1 then break end
         auraName = string.gsub(auraName, "_"," ")
         local bid = GetPlayerBuffID(aura_ix)
-        bid = (bid < -1) and bid + 65536 or bid
+        bid = (bid < -1) and (bid + 65536) or bid
         if string.lower(SpellInfo(bid)) == string.lower(auraName) then
             CancelPlayerBuff(aura_ix)
             break
@@ -185,6 +185,7 @@ function Roids.HasBuff(textureName)
     return false;
 end
 
+-- I need to make a 2h modifier
 -- Maps easy to use weapon type names (e.g. Axes, Shields) to their inventory slot name and their localized tooltip name
 Roids.WeaponTypeNames = {
     Daggers = { slot = "MainHandSlot", name = Roids.Localized.Dagger },
@@ -639,6 +640,15 @@ Roids.Keywords = {
         return And(conditionals.equipped,function (equips)
             return Or(Roids.splitString(equips, "/"), function (v)
                 return (Roids.HasWeaponEquipped(v) or Roids.HasGearEquipped(v))
+            end)
+        end)
+    end,
+
+    -- double And, all must not be true
+    noequipped = function(conditionals)
+        return And(conditionals.noequipped,function (equips)
+            return And(Roids.splitString(equips, "/"), function (v)
+                return not (Roids.HasWeaponEquipped(v) or Roids.HasGearEquipped(v))
             end)
         end)
     end,

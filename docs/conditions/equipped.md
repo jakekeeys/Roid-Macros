@@ -1,4 +1,4 @@
-# equipped
+# [no]equipped
 
 Ensures that the given item or item type is equipped.
 

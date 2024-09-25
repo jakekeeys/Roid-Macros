@@ -419,35 +419,31 @@ function Roids.FindItem(itemName)
 end
 
 -- Attempts to use or equip an item from the player's inventory by a  set of conditionals
+-- Also checks if a condition is a spell so that you can mix item and spell use
 -- msg: The raw message intercepted from a /use or /equip command
 function Roids.DoUse(msg)
     local handled = false;
 
-    local action = function(msg)
-        local checkFor = function(bookType)
-            local i = 1
-            local msg_g = string.gsub(msg, "_", " ");
-            while true do
-                local name, spellRank = GetSpellName(i, bookType);
+    local checkFor = function(msg,bookType)
+        local i = 1
+        local msg_g = string.gsub(msg, "_", " ");
+        while true do
+            local name, spellRank = GetSpellName(i, bookType);
 
-                if not name then
-                    break;
-                end
-                
-                if name == msg_g then
-                    return true
-                end
-                
-                i = i + 1
+            if not name then
+                break;
             end
-            return false
+            
+            if name == msg_g then
+                return true
+            end
+            
+            i = i + 1
         end
+        return false
+    end
 
-        -- check if it's a spell!
-        if checkFor(BOOKTYPE_PET) or checkFor(BOOKTYPE_SPELL) then
-            return Roids.Hooks.CAST_SlashCmd(msg)
-        end
-
+    local action = function(msg)
         local bag, slot = Roids.FindItem(msg);
         
         if bag and bag < 0 then
@@ -461,7 +457,16 @@ function Roids.DoUse(msg)
     end
 
     for k, v in pairs(Roids.splitStringIgnoringQuotes(msg)) do
-        if Roids.DoWithConditionals(v, action, Roids.FixEmptyTarget, not has_superwow, action) then
+        local f
+        local subject = v
+        local _,e = string.find(v,"%]")
+        if e then subject = Roids.Trim(string.sub(v,e+1)) end
+        if checkFor(subject,BOOKTYPE_PET) or checkFor(subject,BOOKTYPE_SPELL) then
+            f = Roids.DoWithConditionals(v, Roids.Hooks.CAST_SlashCmd, Roids.FixEmptyTarget, not has_superwow, CastSpellByName)
+        else
+            f = Roids.DoWithConditionals(v, action, Roids.FixEmptyTarget, not has_superwow, action)
+        end
+        if f then
             handled = true;
             break;
         end
