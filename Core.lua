@@ -25,6 +25,7 @@ function Roids.ExecuteMacroBody(body,inline)
         ChatFrameEditBox:SetText(v);
         ChatEdit_SendText(ChatFrameEditBox);
     end
+    return true
 end
 
 -- Gets the body of the Macro with the given name
@@ -550,30 +551,23 @@ Roids.Frame:RegisterEvent("STOP_AUTOREPEAT_SPELL");
 -- Roids.Frame:RegisterEvent("UI_ERROR_MESSAGE");
 
 Roids.Frame:SetScript("OnEvent", function()
-    Roids.Frame[event]();
-end);
+    Roids.Frame[event](this,arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9,arg10)
+end)
 
-function Roids.Frame.ADDON_LOADED()
-    if event ~= "ADDON_LOADED" then
-        return;
+function Roids.Frame:ADDON_LOADED(addon)
+    if addon ~= "Roid-Macros" then
+        return
     end
 
-    if arg1 == "Roid-Macros" then
-        Roids.InitializeExtensions();
-        return;
-    end
-    
-    if arg1 ~= "SuperMacro" then
-        return;
-    end
+    Roids.InitializeExtensions();
 
-    -- TODO we should scan our bags here to ensure our items are in the WDB 
+    -- TODO we should scan our bags here to ensure our items are in the WDB
     
     local hooks = {
-        cast = { action = Roids.DoCast, },
-        target = { action = Roids.DoTarget, },
-        use = { action = Roids.DoUse, },
-    };
+        cast = { action = Roids.DoCast },
+        target = { action = Roids.DoTarget },
+        use = { action = Roids.DoUse },
+    }
     
     -- Hook SuperMacro's RunLine to stay compatible
     Roids.Hooks.RunLine = RunLine;
@@ -599,11 +593,11 @@ function Roids.Frame.ADDON_LOADED()
     RunLine = Roids.RunLine;
 end
 
-function Roids.Frame.SPELLCAST_CHANNEL_START()
+function Roids.Frame:SPELLCAST_CHANNEL_START()
     Roids.CurrentSpell.type = "channeled";
 end
 
-function Roids.Frame.SPELLCAST_CHANNEL_STOP()
+function Roids.Frame:SPELLCAST_CHANNEL_STOP()
     Roids.CurrentSpell.type = "";
     Roids.CurrentSpell.spellName = "";
 end
@@ -611,34 +605,34 @@ end
 Roids.Frame.SPELLCAST_INTERRUPTED = Roids.Frame.SPELLCAST_CHANNEL_STOP;
 Roids.Frame.SPELLCAST_FAILED = Roids.Frame.SPELLCAST_CHANNEL_STOP;
 
-function Roids.Frame.UI_ERROR_MESSAGE()
+function Roids.Frame:UI_ERROR_MESSAGE()
 --     if arg1 == ERR_NO_ATTACK_TARGET or string.find(string.lower(arg1), "^Can't attack") or arg1 == ERR_INVALID_ATTACK_TARGET then
 --         Roids.CurrentSpell.autoAttack = false
 --     end
 end
 
-function Roids.Frame.PLAYER_ENTER_COMBAT()
+function Roids.Frame:PLAYER_ENTER_COMBAT()
     Roids.CurrentSpell.autoAttack = true;
     Roids.CurrentSpell.autoAttackLock = false
 end
 
-function Roids.Frame.PLAYER_LEAVE_COMBAT()
+function Roids.Frame:PLAYER_LEAVE_COMBAT()
     Roids.CurrentSpell.autoAttack = false;
     Roids.CurrentSpell.autoAttackLock = false
 end
 
 -- just a secondary check, shouldn't matter much
-function Roids.Frame.PLAYER_TARGET_CHANGED()
+function Roids.Frame:PLAYER_TARGET_CHANGED()
     Roids.CurrentSpell.autoAttack = false;
     Roids.CurrentSpell.autoAttackLock = false
 end
 
 -- just a secondary check
--- function Roids.Frame.PLAYER_REGEN_ENABLED()
+-- function Roids.Frame:PLAYER_REGEN_ENABLED()
 --     Roids.CurrentSpell.autoAttack = false;
 -- end
 
-function Roids.Frame.START_AUTOREPEAT_SPELL(...)
+function Roids.Frame:START_AUTOREPEAT_SPELL(...)
     local _, className = UnitClass("player");
     if className == "HUNTER" then
         Roids.CurrentSpell.autoShot = true;
@@ -647,7 +641,7 @@ function Roids.Frame.START_AUTOREPEAT_SPELL(...)
     end
 end
 
-function Roids.Frame.STOP_AUTOREPEAT_SPELL(...)
+function Roids.Frame:STOP_AUTOREPEAT_SPELL(...)
     local _, className = UnitClass("player");
     if className == "HUNTER" then
         Roids.CurrentSpell.autoShot = false;

@@ -386,6 +386,7 @@ function Roids.ValidateCooldown(cooldown_data)
     if not cd then cd,start = Roids.GetInventoryCooldownByName(name) end
     if not cd then cd,start = Roids.GetContainerItemCooldownByName(name) end
     -- if not cd then cd = 0 end
+    if not cd then return false end -- TODO: no item, not quite sure what to do here
 
     -- ignore the gcd if possible?
     -- if cd == 1.5 then return false end
@@ -494,13 +495,11 @@ function Roids.GetContainerItemCooldownByName(itemName)
             local itemId = nil
             if l then _,_,itemId = string.find(l,"item:(%d+)") end
             if itemId then
-		            local name,_link,_,_lvl,_type,subtype = GetItemInfo(itemId)
-		            if itemId == itemName or itemName == name then
-		                local start, duration = GetContainerItemCooldown(i, j);
-		                -- return duration;
-		                return duration,start
-		                -- return i, j;
-	              end
+                local name,_link,_,_lvl,_type,subtype = GetItemInfo(itemId)
+                if itemId == itemName or itemName == name then
+                    local start, duration = GetContainerItemCooldown(i, j);
+                    return duration,start
+                end
             end
         end
     end
