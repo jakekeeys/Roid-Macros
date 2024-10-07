@@ -398,13 +398,13 @@ function Roids.ValidateCooldown(cooldown_data)
     end
 end
 
-function Roids.ValidatePlayerAura(auta_data,debuff)
+function Roids.ValidatePlayerAura(aura_data,debuff)
     local limit,amount
-    local name = auta_data
-    if type(auta_data) == "table" then
-        limit = auta_data.bigger
-        amount = tonumber(auta_data.amount)
-        name = auta_data.name
+    local name = aura_data
+    if type(aura_data) == "table" then
+        limit = aura_data.bigger
+        amount = tonumber(aura_data.amount)
+        name = aura_data.name
     end
     name = string.gsub(name, "_", " ")
 
@@ -530,10 +530,11 @@ local reactives = {
     ["interface\\icons\\ability_warrior_challange"] = "counterattack", -- hunter
 }
 
+-- store found reactive id's, why scan every slot every press
+local reactive = {}
 function CheckReactiveAbility(spellName)
-    for actionSlot = 1, 120 do
-        local tex = GetActionTexture(actionSlot)
-        if tex then
+    local function CheckAction(tex,spellName,actionSlot)
+        if tex and spellName and actionSlot then
             spellName = string.lower(spellName)
             tex = string.lower(tex)
             for spell,spell_texture in pairs(reactives) do
@@ -541,12 +542,32 @@ function CheckReactiveAbility(spellName)
                     local isUsable = IsUsableAction(actionSlot)
                     local start, duration = GetActionCooldown(actionSlot)
                     if isUsable and (start == 0 or duration == 1.5) then -- 1.5 just means gcd is active
-                        return true
+                        return true,true
+                    else
+                        return false,true
                     end
                 end
             end
         end
+        return false,false
     end
+
+    if reactive[spellName] then
+        local tex = GetActionTexture(reactive[spellName])
+        local r,was_hit = CheckAction(tex,spellName,reactive[spellName])
+        if was_hit then
+            return r
+        end
+    end
+    for actionSlot = 1, 120 do
+        local tex = GetActionTexture(actionSlot)
+        local r,was_hit = CheckAction(tex,spellName,actionSlot)
+        if was_hit then
+            reactive[spellName] = actionSlot
+            return r
+        end
+    end
+    Roids.Print(spellName .. " not found on action bars!")
     return false
 end
 
@@ -623,22 +644,31 @@ Roids.Keywords = {
     zone = function(conditionals)
         local zone = string.lower(GetRealZoneText())
         local sub_zone = string.lower(GetSubZoneText())
-        return And(conditionals.zone,function (v)
-            return (sub_zone ~= "" and (string.lower(v) == sub_zone)) or (string.lower(v) == zone)
+        return And(conditionals.zone,function (zones)
+            return Or(Roids.splitString(zones, "/"), function (v)
+                v = string.gsub(v, "_", " ")
+                return (sub_zone ~= "" and (string.lower(v) == sub_zone) or (string.lower(v) == zone))
+            end)
         end)
     end,
 
     nozone = function(conditionals)
         local zone = string.lower(GetRealZoneText())
         local sub_zone = string.lower(GetSubZoneText())
-        return And(conditionals.nozone,function (v)
-            return not ((sub_zone ~= "" and (string.lower(v) == sub_zone)) or (string.lower(v) == zone))
+        -- nozone with options needs all of them to not be true, e.g. AND not OR
+        return And(conditionals.nozone,function (zones)
+            return And(Roids.splitString(zones, "/"), function (v)
+                v = string.gsub(v, "_", " ")
+                return not ((sub_zone ~= "" and (string.lower(v) == sub_zone)) or (string.lower(v) == zone))
+            end)
         end)
+
     end,
 
     equipped = function(conditionals)
         return And(conditionals.equipped,function (equips)
             return Or(Roids.splitString(equips, "/"), function (v)
+                v = string.gsub(v, "_", " ")
                 return (Roids.HasWeaponEquipped(v) or Roids.HasGearEquipped(v))
             end)
         end)
@@ -648,6 +678,7 @@ Roids.Keywords = {
     noequipped = function(conditionals)
         return And(conditionals.noequipped,function (equips)
             return And(Roids.splitString(equips, "/"), function (v)
+                v = string.gsub(v, "_", " ")
                 return not (Roids.HasWeaponEquipped(v) or Roids.HasGearEquipped(v))
             end)
         end)
