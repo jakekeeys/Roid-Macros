@@ -491,13 +491,16 @@ function Roids.GetContainerItemCooldownByName(itemName)
     for i = 0, 4 do
         for j = 1, GetContainerNumSlots(i) do
             local l = GetContainerItemLink(i,j)
+            local itemId = nil
             if l then _,_,itemId = string.find(l,"item:(%d+)") end
-            local name,_link,_,_lvl,_type,subtype = GetItemInfo(itemId)
-            if itemId and itemId == itemName or itemName == name then
-                local start, duration = GetContainerItemCooldown(i, j);
-                -- return duration;
-                return duration,start
-                -- return i, j;
+            if itemId then
+		            local name,_link,_,_lvl,_type,subtype = GetItemInfo(itemId)
+		            if itemId == itemName or itemName == name then
+		                local start, duration = GetContainerItemCooldown(i, j);
+		                -- return duration;
+		                return duration,start
+		                -- return i, j;
+	              end
             end
         end
     end
