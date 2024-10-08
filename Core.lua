@@ -454,25 +454,21 @@ function Roids.DoUse(msg)
         if not bag or not slot then
             return;
         end
-        UseContainerItem(bag, slot);
+        UseContainerItem(bag, slot)
     end
 
     for k, v in pairs(Roids.splitStringIgnoringQuotes(msg)) do
-        local f
         local subject = v
         local _,e = string.find(v,"%]")
         if e then subject = Roids.Trim(string.sub(v,e+1)) end
         if checkFor(subject,BOOKTYPE_PET) or checkFor(subject,BOOKTYPE_SPELL) then
-            f = Roids.DoWithConditionals(v, Roids.Hooks.CAST_SlashCmd, Roids.FixEmptyTarget, not has_superwow, CastSpellByName)
+            handled = Roids.DoWithConditionals(v, Roids.Hooks.CAST_SlashCmd, Roids.FixEmptyTarget, not has_superwow, CastSpellByName)
         else
-            f = Roids.DoWithConditionals(v, action, Roids.FixEmptyTarget, not has_superwow, action)
+            handled = Roids.DoWithConditionals(v, action, Roids.FixEmptyTarget, true, action)
         end
-        if f then
-            handled = true;
-            break;
-        end
+        if handled then break end
     end
-    return handled;
+    return handled
 end
 
 function Roids.DoEquipOffhand(msg)
@@ -561,36 +557,37 @@ function Roids.Frame:ADDON_LOADED(addon)
 
     Roids.InitializeExtensions();
 
-    -- TODO we should scan our bags here to ensure our items are in the WDB
-    
-    local hooks = {
-        cast = { action = Roids.DoCast },
-        target = { action = Roids.DoTarget },
-        use = { action = Roids.DoUse },
-    }
-    
-    -- Hook SuperMacro's RunLine to stay compatible
-    Roids.Hooks.RunLine = RunLine;
-    Roids.RunLine = function(...)
-        for i = 1, arg.n do
-            local intercepted = false;
-            local text = arg[i];
-            
-            for k,v in pairs(hooks) do
-                local begin, _end = string.find(text, "^/"..k.."%s+[!%[]");
-                if begin then
-                    local msg = string.sub(text, _end);
-                    v.action(msg);
-                    intercepted = true;
+    if SuperMacroFrame then
+        local hooks = {
+            cast = { action = Roids.DoCast },
+            target = { action = Roids.DoTarget },
+            use = { action = Roids.DoUse },
+        }
+
+        -- Hook SuperMacro's RunLine to stay compatible
+        Roids.Hooks.RunLine = RunLine;
+        Roids.RunLine = function(...)
+            for i = 1, arg.n do
+                local intercepted = false;
+                local text = arg[i];
+
+                for k,v in pairs(hooks) do
+                    local begin, _end = string.find(text, "^/"..k.."%s+[!%[]");
+                    if begin then
+                        local msg = string.sub(text, _end);
+                        v.action(msg);
+                        intercepted = true;
+                        break
+                    end
+                end
+
+                if not intercepted then
+                    Roids.Hooks.RunLine(text);
                 end
             end
-            
-            if not intercepted then
-                Roids.Hooks.RunLine(text);
-            end
         end
+        RunLine = Roids.RunLine;
     end
-    RunLine = Roids.RunLine;
 end
 
 function Roids.Frame:SPELLCAST_CHANNEL_START()

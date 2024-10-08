@@ -5,6 +5,9 @@
 local _G = _G or getfenv(0)
 local Roids = _G.Roids or {}
 
+-- local cache to reduce search time for cooldown purposes
+local item_cache = {}
+
 function print(msg)
     DEFAULT_CHAT_FRAME:AddMessage(msg)
 end
@@ -360,13 +363,14 @@ end
 -- remarks: Allows for both localized and unlocalized type names
 function Roids.ValidateCreatureType(creatureType, target)
     if not target then return false end
+    local targetType = UnitCreatureType(target)
+    if not targetType then return false end -- ooze or silithid etc
     local ct = string.lower(creatureType)
     local cl = UnitClassification(target)
     if (ct == "boss" and "worldboss" or ct) == cl then
         return true
     end
     if string.lower(creatureType) == "boss" then creatureType = "worldboss" end
-    local targetType = UnitCreatureType(target);
     local englishType = Roids.Localized.CreatureTypes[targetType];
     return string.lower(creatureType) == string.lower(targetType) or creatureType == englishType;
 end
@@ -446,8 +450,6 @@ function Roids.GetSpellCooldownByName(spellName)
             end
             
             if name == spellName then
-                -- local _, duration = GetSpellCooldown(i, bookType);
-                -- return duration;
                 return GetSpellCooldown(i, bookType);
             end
             
@@ -455,55 +457,73 @@ function Roids.GetSpellCooldownByName(spellName)
         end
         return nil;
     end
-    
-    
+
     local start,cd = checkFor(BOOKTYPE_PET);
     if not cd then start,cd = checkFor(BOOKTYPE_SPELL); end
-    -- print(start)
-    -- print(cd)
-    
+
     return cd,start;
 end
 
 -- Returns the cooldown of the given equipped itemName or nil if no such item was found
 function Roids.GetInventoryCooldownByName(itemName)
-    local slotLink = nil
-    for i = 0, 19 do
-        slotLink = GetInventoryItemLink("player",i)
-        if slotLink then
-            if itemName == itemId then
-                return -i
-            end
-            local _,_,itemId = string.find(slotLink,"item:(%d+)")
-            -- local gearName = string.gsub(itemId, "_", " ");
-            local name,_link,_,_lvl,_type,subtype = GetItemInfo(itemId)
-            if itemName == itemId or name == itemName then
-                local start, duration = GetInventoryItemCooldown("player", i);
-                return duration, start
-                -- return -i
-            end
+    local function CheckItem(slot)
+        local slotLink = GetInventoryItemLink("player",slot)
+        if not slotLink then return nil end
+        local _,_,itemId = string.find(slotLink,"item:(%d+)")
+        local name,_link,_,_lvl,_type,subtype = GetItemInfo(itemId)
+        if itemName == itemId or name == itemName then
+            local start, duration = GetInventoryItemCooldown("player", slot);
+            return duration,start
         end
     end
-    return nil;
+
+    if item_cache[itemName] and item_cache[itemName].bag == -1 then
+        local duration,start = CheckItem(item_cache[itemName].slot)
+        if duration then
+            return duration,start
+        end
+    end
+
+    for i = 0, 19 do
+        local duration,start = CheckItem(i)
+        if duration then
+            item_cache[itemName] = { bag = -1, slot = i }
+            return duration,start
+        end
+    end
+    return nil
 end
 
 -- Returns the cooldown of the given itemName in the player's bags or nil if no such item was found
 function Roids.GetContainerItemCooldownByName(itemName)
+    local function CheckItem(bag,slot)
+        local slotLink = GetContainerItemLink(bag,slot)
+        if not slotLink then return nil end
+        local _,_,itemId = string.find(slotLink,"item:(%d+)")
+        local name,_link,_,_lvl,_type,subtype = GetItemInfo(itemId)
+        if itemName == itemId or name == itemName then
+            local start, duration = GetContainerItemCooldown(bag, slot);
+            return duration, start
+        end
+    end
+
+    if item_cache[itemName] then
+        local duration,start = CheckItem(item_cache[itemName].bag, item_cache[itemName].slot)
+        if duration then
+            return duration,start
+        end
+    end
+
     for i = 0, 4 do
         for j = 1, GetContainerNumSlots(i) do
-            local l = GetContainerItemLink(i,j)
-            local itemId = nil
-            if l then _,_,itemId = string.find(l,"item:(%d+)") end
-            if itemId then
-                local name,_link,_,_lvl,_type,subtype = GetItemInfo(itemId)
-                if itemId == itemName or itemName == name then
-                    local start, duration = GetContainerItemCooldown(i, j);
-                    return duration,start
-                end
+            local duration,start = CheckItem(i,j)
+            if duration then
+                item_cache[itemName] = { bag = i, slot = j }
+                return duration,start
             end
         end
     end
-    return nil;
+    return nil
 end
 
 local function And(t,func)
