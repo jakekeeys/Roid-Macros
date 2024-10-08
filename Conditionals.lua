@@ -5,6 +5,9 @@
 local _G = _G or getfenv(0)
 local Roids = _G.Roids or {}
 
+-- local cache to reduce search time for cooldown purposes
+local item_cache = {}
+
 function print(msg)
     DEFAULT_CHAT_FRAME:AddMessage(msg)
 end
@@ -360,13 +363,14 @@ end
 -- remarks: Allows for both localized and unlocalized type names
 function Roids.ValidateCreatureType(creatureType, target)
     if not target then return false end
+    local targetType = UnitCreatureType(target)
+    if not targetType then return false end -- ooze or silithid etc
     local ct = string.lower(creatureType)
     local cl = UnitClassification(target)
     if (ct == "boss" and "worldboss" or ct) == cl then
         return true
     end
     if string.lower(creatureType) == "boss" then creatureType = "worldboss" end
-    local targetType = UnitCreatureType(target);
     local englishType = Roids.Localized.CreatureTypes[targetType];
     return string.lower(creatureType) == string.lower(targetType) or creatureType == englishType;
 end
@@ -386,6 +390,7 @@ function Roids.ValidateCooldown(cooldown_data)
     if not cd then cd,start = Roids.GetInventoryCooldownByName(name) end
     if not cd then cd,start = Roids.GetContainerItemCooldownByName(name) end
     -- if not cd then cd = 0 end
+    if not cd then return false end -- TODO: no item, not quite sure what to do here
 
     -- ignore the gcd if possible?
     -- if cd == 1.5 then return false end
@@ -398,13 +403,13 @@ function Roids.ValidateCooldown(cooldown_data)
     end
 end
 
-function Roids.ValidatePlayerAura(auta_data,debuff)
+function Roids.ValidatePlayerAura(aura_data,debuff)
     local limit,amount
-    local name = auta_data
-    if type(auta_data) == "table" then
-        limit = auta_data.bigger
-        amount = tonumber(auta_data.amount)
-        name = auta_data.name
+    local name = aura_data
+    if type(aura_data) == "table" then
+        limit = aura_data.bigger
+        amount = tonumber(aura_data.amount)
+        name = aura_data.name
     end
     name = string.gsub(name, "_", " ")
 
@@ -445,8 +450,6 @@ function Roids.GetSpellCooldownByName(spellName)
             end
             
             if name == spellName then
-                -- local _, duration = GetSpellCooldown(i, bookType);
-                -- return duration;
                 return GetSpellCooldown(i, bookType);
             end
             
@@ -454,54 +457,73 @@ function Roids.GetSpellCooldownByName(spellName)
         end
         return nil;
     end
-    
-    
+
     local start,cd = checkFor(BOOKTYPE_PET);
     if not cd then start,cd = checkFor(BOOKTYPE_SPELL); end
-    -- print(start)
-    -- print(cd)
-    
+
     return cd,start;
 end
 
 -- Returns the cooldown of the given equipped itemName or nil if no such item was found
 function Roids.GetInventoryCooldownByName(itemName)
-    local slotLink = nil
-    for i = 0, 19 do
-        slotLink = GetInventoryItemLink("player",i)
-        if slotLink then
-            if itemName == itemId then
-                return -i
-            end
-            local _,_,itemId = string.find(slotLink,"item:(%d+)")
-            -- local gearName = string.gsub(itemId, "_", " ");
-            local name,_link,_,_lvl,_type,subtype = GetItemInfo(itemId)
-            if itemName == itemId or name == itemName then
-                local start, duration = GetInventoryItemCooldown("player", i);
-                return duration, start
-                -- return -i
-            end
+    local function CheckItem(slot)
+        local slotLink = GetInventoryItemLink("player",slot)
+        if not slotLink then return nil end
+        local _,_,itemId = string.find(slotLink,"item:(%d+)")
+        local name,_link,_,_lvl,_type,subtype = GetItemInfo(itemId)
+        if itemName == itemId or name == itemName then
+            local start, duration = GetInventoryItemCooldown("player", slot);
+            return duration,start
         end
     end
-    return nil;
+
+    if item_cache[itemName] and item_cache[itemName].bag == -1 then
+        local duration,start = CheckItem(item_cache[itemName].slot)
+        if duration then
+            return duration,start
+        end
+    end
+
+    for i = 0, 19 do
+        local duration,start = CheckItem(i)
+        if duration then
+            item_cache[itemName] = { bag = -1, slot = i }
+            return duration,start
+        end
+    end
+    return nil
 end
 
 -- Returns the cooldown of the given itemName in the player's bags or nil if no such item was found
 function Roids.GetContainerItemCooldownByName(itemName)
+    local function CheckItem(bag,slot)
+        local slotLink = GetContainerItemLink(bag,slot)
+        if not slotLink then return nil end
+        local _,_,itemId = string.find(slotLink,"item:(%d+)")
+        local name,_link,_,_lvl,_type,subtype = GetItemInfo(itemId)
+        if itemName == itemId or name == itemName then
+            local start, duration = GetContainerItemCooldown(bag, slot);
+            return duration, start
+        end
+    end
+
+    if item_cache[itemName] then
+        local duration,start = CheckItem(item_cache[itemName].bag, item_cache[itemName].slot)
+        if duration then
+            return duration,start
+        end
+    end
+
     for i = 0, 4 do
         for j = 1, GetContainerNumSlots(i) do
-            local l = GetContainerItemLink(i,j)
-            if l then _,_,itemId = string.find(l,"item:(%d+)") end
-            local name,_link,_,_lvl,_type,subtype = GetItemInfo(itemId)
-            if itemId and itemId == itemName or itemName == name then
-                local start, duration = GetContainerItemCooldown(i, j);
-                -- return duration;
+            local duration,start = CheckItem(i,j)
+            if duration then
+                item_cache[itemName] = { bag = i, slot = j }
                 return duration,start
-                -- return i, j;
             end
         end
     end
-    return nil;
+    return nil
 end
 
 local function And(t,func)
@@ -530,10 +552,11 @@ local reactives = {
     ["interface\\icons\\ability_warrior_challange"] = "counterattack", -- hunter
 }
 
+-- store found reactive id's, why scan every slot every press
+local reactive = {}
 function CheckReactiveAbility(spellName)
-    for actionSlot = 1, 120 do
-        local tex = GetActionTexture(actionSlot)
-        if tex then
+    local function CheckAction(tex,spellName,actionSlot)
+        if tex and spellName and actionSlot then
             spellName = string.lower(spellName)
             tex = string.lower(tex)
             for spell,spell_texture in pairs(reactives) do
@@ -541,12 +564,32 @@ function CheckReactiveAbility(spellName)
                     local isUsable = IsUsableAction(actionSlot)
                     local start, duration = GetActionCooldown(actionSlot)
                     if isUsable and (start == 0 or duration == 1.5) then -- 1.5 just means gcd is active
-                        return true
+                        return true,true
+                    else
+                        return false,true
                     end
                 end
             end
         end
+        return false,false
     end
+
+    if reactive[spellName] then
+        local tex = GetActionTexture(reactive[spellName])
+        local r,was_hit = CheckAction(tex,spellName,reactive[spellName])
+        if was_hit then
+            return r
+        end
+    end
+    for actionSlot = 1, 120 do
+        local tex = GetActionTexture(actionSlot)
+        local r,was_hit = CheckAction(tex,spellName,actionSlot)
+        if was_hit then
+            reactive[spellName] = actionSlot
+            return r
+        end
+    end
+    Roids.Print(spellName .. " not found on action bars!")
     return false
 end
 
@@ -623,22 +666,31 @@ Roids.Keywords = {
     zone = function(conditionals)
         local zone = string.lower(GetRealZoneText())
         local sub_zone = string.lower(GetSubZoneText())
-        return And(conditionals.zone,function (v)
-            return (sub_zone ~= "" and (string.lower(v) == sub_zone)) or (string.lower(v) == zone)
+        return And(conditionals.zone,function (zones)
+            return Or(Roids.splitString(zones, "/"), function (v)
+                v = string.gsub(v, "_", " ")
+                return (sub_zone ~= "" and (string.lower(v) == sub_zone) or (string.lower(v) == zone))
+            end)
         end)
     end,
 
     nozone = function(conditionals)
         local zone = string.lower(GetRealZoneText())
         local sub_zone = string.lower(GetSubZoneText())
-        return And(conditionals.nozone,function (v)
-            return not ((sub_zone ~= "" and (string.lower(v) == sub_zone)) or (string.lower(v) == zone))
+        -- nozone with options needs all of them to not be true, e.g. AND not OR
+        return And(conditionals.nozone,function (zones)
+            return And(Roids.splitString(zones, "/"), function (v)
+                v = string.gsub(v, "_", " ")
+                return not ((sub_zone ~= "" and (string.lower(v) == sub_zone)) or (string.lower(v) == zone))
+            end)
         end)
+
     end,
 
     equipped = function(conditionals)
         return And(conditionals.equipped,function (equips)
             return Or(Roids.splitString(equips, "/"), function (v)
+                v = string.gsub(v, "_", " ")
                 return (Roids.HasWeaponEquipped(v) or Roids.HasGearEquipped(v))
             end)
         end)
@@ -648,6 +700,7 @@ Roids.Keywords = {
     noequipped = function(conditionals)
         return And(conditionals.noequipped,function (equips)
             return And(Roids.splitString(equips, "/"), function (v)
+                v = string.gsub(v, "_", " ")
                 return not (Roids.HasWeaponEquipped(v) or Roids.HasGearEquipped(v))
             end)
         end)

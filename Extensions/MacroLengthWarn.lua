@@ -11,6 +11,12 @@ local Extension = Roids.RegisterExtension("MacroLengthWarn");
 local edit_orig = EditMacro
 
 function Extension.SafeEditMacro(macro_id, x, y, body)
+    if SuperMacroFrame ~= nil and body == nil then
+        -- super will handle macro
+        edit_orig(macro_id, x, y, body)
+        return
+    end
+
     for line in string.gfind(body, "([^\n]+)") do
         -- print(line)
         if string.len(line) > 261 then
