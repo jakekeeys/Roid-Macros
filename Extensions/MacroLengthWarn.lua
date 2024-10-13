@@ -11,8 +11,13 @@ local Extension = Roids.RegisterExtension("MacroLengthWarn");
 local edit_orig = EditMacro
 
 function Extension.SafeEditMacro(macro_id, x, y, body)
-    if SuperMacroFrame ~= nil and body == nil then
+    if SuperMacroFrame ~= nil and x and y and body == nil then
         -- super will handle macro
+        edit_orig(macro_id, x, y, body)
+        return
+    end
+
+    if not body then -- can't be too long without a body
         edit_orig(macro_id, x, y, body)
         return
     end
@@ -24,7 +29,7 @@ function Extension.SafeEditMacro(macro_id, x, y, body)
             return
         end
     end
-    edit_orig(macro_id, x, y, body);
+    edit_orig(macro_id, x, y, body)
 end
 
 
