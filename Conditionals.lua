@@ -597,6 +597,10 @@ function Roids.CheckReactiveAbility(spellName)
 end
 
 function Roids.CheckSpellCast(spell,unit)
+    if not Roids.has_superwow then
+        Roids.Print("'casting' conditional requires SuperWoW")
+        return
+    end
     local spell = string.gsub(spell or "", "_", " ");
     local _,guid = UnitExists(unit)
     if not guid or (guid and not Roids.spell_tracking[guid]) then
@@ -641,23 +645,6 @@ Roids.Keywords = {
             end
         end
         return false
-
-        -- local modifiersPressed = true;
-        
-        -- for k,v in pairs(Roids.splitString(conditionals.mod, "/")) do
-        --     if v == "alt" and not IsAltKeyDown() then
-        --         modifiersPressed = false;
-        --         break;
-        --     elseif v == "ctrl" and not IsControlKeyDown() then
-        --         modifiersPressed = false;
-        --         break;
-        --     elseif v == "shift" and not IsShiftKeyDown() then
-        --         modifiersPressed = false;
-        --         break;
-        --     end
-        -- end
-        
-        -- return modifiersPressed;
     end,
     
     target = function(conditionals)

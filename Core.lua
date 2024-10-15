@@ -12,7 +12,7 @@ Roids.mouseoverUnit = Roids.mouseoverUnit or nil;
 
 Roids.Extensions = Roids.Extensions or {};
 
-local has_superwow = SetAutoloot and true or false
+Roids.has_superwow = SetAutoloot and true or false
 
 -- Executes the given Macro's body
 -- body: The Macro's body
@@ -302,7 +302,7 @@ function Roids.DoWithConditionals(msg, hook, fixEmptyTargetFunc, targetBeforeAct
         end
     end
 
-    if conditionals.target ~= nil and targetBeforeAction and not (has_superwow and action == CastSpellByName) then
+    if conditionals.target ~= nil and targetBeforeAction and not (Roids.has_superwow and action == CastSpellByName) then
         if not UnitIsUnit("target", conditionals.target) then
             needRetarget = true;
         end
@@ -327,7 +327,7 @@ function Roids.DoWithConditionals(msg, hook, fixEmptyTargetFunc, targetBeforeAct
             result = Roids.ExecuteMacroByName(string.sub(msg, 2, -2));
         end
     else
-        if has_superwow and action == CastSpellByName and conditionals.target then
+        if Roids.has_superwow and action == CastSpellByName and conditionals.target then
             action(msg,conditionals.target);
         else
             action(msg);
@@ -349,7 +349,7 @@ function Roids.DoCast(msg)
 
     for k, v in pairs(Roids.splitStringIgnoringQuotes(msg)) do
     -- for k, v in pairs(Roids.splitString(msg,";%s*")) do
-        if Roids.DoWithConditionals(v, Roids.Hooks.CAST_SlashCmd, Roids.FixEmptyTarget, not has_superwow, CastSpellByName) then
+        if Roids.DoWithConditionals(v, Roids.Hooks.CAST_SlashCmd, Roids.FixEmptyTarget, not Roids.has_superwow, CastSpellByName) then
             handled = true; -- we parsed at least one command
             break;
         end
@@ -384,7 +384,7 @@ end
 function Roids.DoPetAttack(msg)
     local handled = false;
     for k, v in pairs(Roids.splitStringIgnoringQuotes(msg)) do
-        if Roids.DoWithConditionals(v, nil, Roids.FixEmptyTarget, not has_superwow, PetAttack) then
+        if Roids.DoWithConditionals(v, nil, Roids.FixEmptyTarget, not Roids.has_superwow, PetAttack) then
             handled = true;
             break;
         end
@@ -473,7 +473,7 @@ function Roids.DoUse(msg)
         local _,e = string.find(v,"%]")
         if e then subject = Roids.Trim(string.sub(v,e+1)) end
         if checkFor(subject,BOOKTYPE_PET) or checkFor(subject,BOOKTYPE_SPELL) then
-            handled = Roids.DoWithConditionals(v, Roids.Hooks.CAST_SlashCmd, Roids.FixEmptyTarget, not has_superwow, CastSpellByName)
+            handled = Roids.DoWithConditionals(v, Roids.Hooks.CAST_SlashCmd, Roids.FixEmptyTarget, not Roids.has_superwow, CastSpellByName)
         else
             handled = Roids.DoWithConditionals(v, action, Roids.FixEmptyTarget, true, action)
         end
@@ -495,7 +495,7 @@ function Roids.DoEquipOffhand(msg)
     end
     
     for k, v in pairs(Roids.splitStringIgnoringQuotes(msg)) do
-        if Roids.DoWithConditionals(v, action, Roids.FixEmptyTarget, not has_superwow, action) then
+        if Roids.DoWithConditionals(v, action, Roids.FixEmptyTarget, not Roids.has_superwow, action) then
             handled = true;
             break;
         end
@@ -515,7 +515,7 @@ function Roids.DoUnshift(msg)
     
     for k, v in pairs(Roids.splitStringIgnoringQuotes(msg)) do
         handled = false;
-        if Roids.DoWithConditionals(v, action, Roids.FixEmptyTarget, not has_superwow, action) then
+        if Roids.DoWithConditionals(v, action, Roids.FixEmptyTarget, not Roids.has_superwow, action) then
             handled = true;
             break;
         end

@@ -1,6 +1,6 @@
 # casting / nocasting
 
-This condition will only fire when a target is casting a spell. Can be inverted by adding `no` in front of `casting`  
+This [SuperWoW] condition will only fire when a target is casting a spell. Can be inverted by adding `no` in front of `casting`  
 
 ## Examples
 
