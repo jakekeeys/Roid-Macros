@@ -72,6 +72,10 @@ function Roids.FindDelimeter(word)
             delimeter = string.find(word, "<");
             which = 0;
         end
+        -- if not delimeter then
+        --     delimeter = string.find(word, "=");
+        --     which = 2;
+        -- end
     end
     
     if not delimeter then
@@ -144,6 +148,8 @@ function Roids.parseMsg(msg)
                         -- conditionals[conditional] = string.sub(rest2, delimeter + 1);
                     end
                 else
+                    -- print(conditional)
+                    -- print(rest)
                     table.insert(conditionals[conditional], rest)
                 end
                 -- print("condnotwhich "..conditional)
@@ -153,7 +159,12 @@ function Roids.parseMsg(msg)
             conditionals["target"] = string.sub(w,  2);
         -- Any other keyword like harm or help
         elseif Roids.Keywords[w] ~= nil then
-            conditionals[w] = 1;
+            if w == "casting" or w == "nocasting" then
+                conditionals[w] = conditionals[w] or {}
+                table.insert(conditionals[w], "")
+            else
+                conditionals[w] = 1;
+            end
         end
     end
     
@@ -538,6 +549,7 @@ Roids.Frame:RegisterEvent("SPELLCAST_CHANNEL_START");
 Roids.Frame:RegisterEvent("SPELLCAST_CHANNEL_STOP");
 Roids.Frame:RegisterEvent("SPELLCAST_INTERRUPTED");
 Roids.Frame:RegisterEvent("SPELLCAST_FAILED");
+Roids.Frame:RegisterEvent("UNIT_CASTEVENT");
 Roids.Frame:RegisterEvent("PLAYER_ENTER_COMBAT");
 Roids.Frame:RegisterEvent("PLAYER_LEAVE_COMBAT");
 -- Roids.Frame:RegisterEvent("PLAYER_REGEN_ENABLED");
@@ -590,6 +602,21 @@ function Roids.Frame:ADDON_LOADED(addon)
     end
 end
 
+Roids.spell_tracking = {}
+function Roids.Frame:UNIT_CASTEVENT(caster,target,action,spell_id,cast_time)
+    if action == "MAINHAND" or action == "OFFHAND" then return end
+
+    local cast = Roids.spell_tracking[caster]
+    if action == "START" or action == "CHANNEL" then
+        -- print(SpellInfo(spell_id).." start")
+        Roids.spell_tracking[caster] = { spell_id = spell_id, cast_time = cast_time, started = GetTime() }
+    elseif cast and (action == "FAIL" or action == "CAST" or
+            (cast.started + cast.cast_time) > GetTime()) then
+        -- print(SpellInfo(spell_id).." finished")
+        Roids.spell_tracking[caster] = nil
+    end
+end
+
 function Roids.Frame:SPELLCAST_CHANNEL_START()
     Roids.CurrentSpell.type = "channeled";
 end
@@ -620,6 +647,12 @@ end
 
 -- just a secondary check, shouldn't matter much
 function Roids.Frame:PLAYER_TARGET_CHANGED()
+    -- clean useless spell tracks, there won't be that many
+    for guid,cast in Roids.spell_tracking do
+        if not UnitExists(guid) then
+            Roids.spell_tracking[guid] = nil
+        end
+    end
     Roids.CurrentSpell.autoAttack = false;
     Roids.CurrentSpell.autoAttackLock = false
 end

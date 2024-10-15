@@ -91,6 +91,7 @@ This is a list of all Chat Commands that support conditions:
 # Available Conditoins:
 * [attacks / noattacks](conditions/attacks.md)
 * [(no)buff / (no)mybuff / (no)debuff / (no)mydebuff](conditions/buffs.md)
+* [casting / nocasting](conditions/casting.md)
 * [channeled / nochanneled](conditions/channeled.md)
 * [combat / nocombat](conditions/combat.md)
 * [cooldown / nocooldown](conditions/cooldown.md)

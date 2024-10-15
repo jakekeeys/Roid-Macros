@@ -16,6 +16,7 @@ pages:
         - conditions.md
         - conditions/attacks.md
         - conditions/buffs.md
+        - conditions/casting.md
         - conditions/channeled.md
         - conditions/combat.md
         - conditions/cooldown.md
@@ -34,6 +35,7 @@ pages:
         - conditions/stealth.md
         - conditions/target.md
         - conditions/type.md
+        - conditions/zone.md
     - Invoking Macros: macro_invoking.md
     - Miscellaneous:
         - showtooltip.md

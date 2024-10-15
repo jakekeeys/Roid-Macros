@@ -394,6 +394,9 @@ function Roids.ValidateCooldown(cooldown_data)
 
     -- ignore the gcd if possible?
     -- if cd == 1.5 then return false end
+    -- if limit == 2 and cd == amount then
+    --     return true
+    -- elseif limit == 1 and start ~= 0 then
     if limit == 1 and start ~= 0 then
         return (start + cd - GetTime()) >= amount
     elseif limit == 0 then
@@ -554,7 +557,7 @@ local reactives = {
 
 -- store found reactive id's, why scan every slot every press
 local reactive = {}
-function CheckReactiveAbility(spellName)
+function Roids.CheckReactiveAbility(spellName)
     local function CheckAction(tex,spellName,actionSlot)
         if tex and spellName and actionSlot then
             spellName = string.lower(spellName)
@@ -593,12 +596,26 @@ function CheckReactiveAbility(spellName)
     return false
 end
 
+function Roids.CheckSpellCast(spell,unit)
+    local spell = string.gsub(spell or "", "_", " ");
+    local _,guid = UnitExists(unit)
+    if not guid or (guid and not Roids.spell_tracking[guid]) then
+        return false
+    else
+        -- are we casting a specific spell, or any spell
+        if spell == SpellInfo(Roids.spell_tracking[guid].spell_id) or (spell == "") then
+            return true
+        end
+        return false
+    end
+end
+
 -- A list of Conditionals and their functions to validate them
 Roids.Keywords = {
     help = function(conditionals)
         return true;
     end,
-    
+
     harm = function(conditionals)
         return true;
     end,
@@ -663,6 +680,14 @@ Roids.Keywords = {
         return not Roids.HasBuff("Interface\\Icons\\Ability_Ambush");
     end,
 
+    casting = function(conditionals)
+        return And(conditionals.casting,function (v) return Roids.CheckSpellCast(v,conditionals.target) end)
+    end,
+
+    nocasting = function(conditionals)
+        return Or(conditionals.nocasting,function (v) return not Roids.CheckSpellCast(v,conditionals.target) end)
+    end,
+
     zone = function(conditionals)
         local zone = string.lower(GetRealZoneText())
         local sub_zone = string.lower(GetSubZoneText())
@@ -712,13 +737,13 @@ Roids.Keywords = {
 
     reactive = function(conditionals)
         return And(conditionals.reactive,function (v)
-            return CheckReactiveAbility(v)
+            return Roids.CheckReactiveAbility(v)
         end)
     end,
 
     noreactive = function(conditionals)
         return And(conditionals.noreactive,function (v)
-            return not CheckReactiveAbility(v)
+            return not Roids.CheckReactiveAbility(v)
         end)
     end,
 
