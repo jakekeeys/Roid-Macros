@@ -8,7 +8,7 @@ This condition will only fire when a target is casting a spell. Can be inverted 
 /cast [casting @target] Pummel
 ```
 
-You will Pummel only when your target is casting a spell.  
+You will Pummel only when your target is casting any spell.  
 
 ```lua
 /cast [casting:Polymorph @target] Counterspell

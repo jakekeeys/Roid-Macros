@@ -607,12 +607,13 @@ function Roids.Frame:UNIT_CASTEVENT(caster,target,action,spell_id,cast_time)
     if action == "MAINHAND" or action == "OFFHAND" then return end
 
     local cast = Roids.spell_tracking[caster]
-    if action == "START" or action == "CHANNEL" then
-        -- print(SpellInfo(spell_id).." start")
-        Roids.spell_tracking[caster] = { spell_id = spell_id, cast_time = cast_time, started = GetTime() }
-    elseif cast and (action == "FAIL" or action == "CAST" or
-            (cast.started + cast.cast_time) > GetTime()) then
-        -- print(SpellInfo(spell_id).." finished")
+    if cast_time > 0 and action == "START" or action == "CHANNEL" then
+        -- print(SpellInfo(spell_id).." "..spell_id.." start "..action)
+        Roids.spell_tracking[caster] = { spell_id = spell_id, cast_time = cast_time/1000, started = GetTime(), type = action }
+    elseif cast and ((cast.spell_id == spell_id and (action == "FAIL" or action == "CAST")) or
+            (GetTime() > cast.started + cast.cast_time)) then
+        -- print(SpellInfo(spell_id).." "..spell_id.." finished "..action)
+
         Roids.spell_tracking[caster] = nil
     end
 end
