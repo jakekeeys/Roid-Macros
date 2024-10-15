@@ -669,6 +669,7 @@ Roids.Keywords = {
 
     casting = function(conditionals)
         return And(conditionals.casting,function (spells)
+            if spells == "" then return Roids.CheckSpellCast("",conditionals.target) end
             return Or(Roids.splitString(spells, "/"), function (spell)
                 return Roids.CheckSpellCast(spell,conditionals.target)
             end)
@@ -678,7 +679,8 @@ Roids.Keywords = {
 
     nocasting = function(conditionals)
         -- nocasting with options needs all of them to not be true, e.g. AND not OR
-        return And(conditionals.casting,function (spells)
+        return And(conditionals.nocasting,function (spells)
+            if spells == "" then return not Roids.CheckSpellCast("",conditionals.target) end
             return And(Roids.splitString(spells, "/"), function (spell)
                 return not Roids.CheckSpellCast(spell,conditionals.target)
             end)
