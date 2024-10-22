@@ -1,8 +1,8 @@
 ## Interface: 11200
 ## Author: DWG
-## Title: Roid Macros
+## Title: Roid Macros - Weird Vibes
 ## Notes: Vanilla macros on steroids!
-## Title-deDE: Roid Macros
+## Title-deDE: Roid Macros - Weird Vibes
 ## Notes-deDE: Vanilla Macros auf Steroide!
 ## OptionalDeps: ClassicFocus, FocusFrame, pfUI, SuperMacro
 Widgets.xml
