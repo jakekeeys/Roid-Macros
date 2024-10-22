@@ -120,6 +120,10 @@ function Roids.HasDeBuffName(buffName, unit)
 end
 
 function Roids.ValidateAura(aura_data, isbuff, unit)
+    if not Roids.has_superwow then
+        Roids.Print("'buff/debuff' conditional requires SuperWoW")
+        return
+    end
     local limit,amount
     local name = aura_data
     if type(aura_data) == "table" then
@@ -407,6 +411,10 @@ function Roids.ValidateCooldown(cooldown_data)
 end
 
 function Roids.ValidatePlayerAura(aura_data,debuff)
+    if not Roids.has_superwow then
+        Roids.Print("'mybuff/mydebuff' conditional requires SuperWoW")
+        return
+    end
     local limit,amount
     local name = aura_data
     if type(aura_data) == "table" then
@@ -778,7 +786,8 @@ Roids.Keywords = {
     end,
 
     nobuff = function(conditionals)
-        return And(conditionals.nobuff,function (v) return not Roids.HasBuffName(v, conditionals.target) end)
+        return And(conditionals.nobuff,function (v) return not Roids.ValidateAura(v, true, conditionals.target) end)
+        -- return And(conditionals.nobuff,function (v) return not Roids.HasBuffName(v, conditionals.target) end)
     end,
 
     debuff = function(conditionals)
@@ -786,7 +795,8 @@ Roids.Keywords = {
     end,
 
     nodebuff = function(conditionals)
-        return And(conditionals.nodebuff,function (v) return not Roids.HasDeBuffName(v, conditionals.target) end)
+        return And(conditionals.nodebuff,function (v) return not Roids.ValidateAura(v, false, conditionals.target) end)
+        -- return And(conditionals.nodebuff,function (v) return not Roids.HasDeBuffName(v, conditionals.target) end)
     end,
 
     mybuff = function(conditionals)
