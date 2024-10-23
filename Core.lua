@@ -476,7 +476,7 @@ function Roids.DoUse(msg)
         if checkFor(subject,BOOKTYPE_PET) or checkFor(subject,BOOKTYPE_SPELL) then
             handled = Roids.DoWithConditionals(v, Roids.Hooks.CAST_SlashCmd, Roids.FixEmptyTarget, not Roids.has_superwow, CastSpellByName)
         else
-            handled = Roids.DoWithConditionals(v, action, Roids.FixEmptyTarget, true, action)
+            handled = Roids.DoWithConditionals(v, action, Roids.FixEmptyTarget, false, action)
         end
         if handled then break end
     end
@@ -496,7 +496,7 @@ function Roids.DoEquipOffhand(msg)
     end
     
     for k, v in pairs(Roids.splitStringIgnoringQuotes(msg)) do
-        if Roids.DoWithConditionals(v, action, Roids.FixEmptyTarget, not Roids.has_superwow, action) then
+        if Roids.DoWithConditionals(v, action, Roids.FixEmptyTarget, false, action) then
             handled = true;
             break;
         end
@@ -657,6 +657,7 @@ function Roids.Frame:PLAYER_TARGET_CHANGED()
     end
     Roids.CurrentSpell.autoAttack = false;
     Roids.CurrentSpell.autoAttackLock = false
+    -- print("tarchange")
 end
 
 -- just a secondary check
