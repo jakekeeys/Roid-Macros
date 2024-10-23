@@ -465,6 +465,7 @@ function Roids.DoUse(msg)
         if not bag or not slot then
             return;
         end
+        if (MerchantFrame:IsVisible() and MerchantFrame.selectedTab == 1) then return end
         UseContainerItem(bag, slot)
     end
 
