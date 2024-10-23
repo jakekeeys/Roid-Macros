@@ -31,6 +31,7 @@
 ```
 /cast [casting] Pummel
 ```
+* Prefer using mybuff/mydebuff when you can, they are more likely to do what you want over [buff @player]
 
 ---
 

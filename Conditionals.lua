@@ -120,6 +120,7 @@ function Roids.HasDeBuffName(buffName, unit)
 end
 
 function Roids.ValidateAura(aura_data, isbuff, unit)
+    if not unit then return false end
     if not Roids.has_superwow then
         Roids.Print("'buff/debuff' conditional requires SuperWoW")
         return
