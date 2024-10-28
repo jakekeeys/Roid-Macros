@@ -60,7 +60,8 @@ function Roids.splitStringIgnoringQuotes(str)
         table.insert(result, temp)
     end
 
-    return result
+    -- if nothing was found, return the empty string
+    return (next(result) and result or {""})
 end
 
 -- Prints all the given arguments into WoW's default chat frame

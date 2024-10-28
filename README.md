@@ -1,10 +1,10 @@
 # Roid Macros
 
 ### Customized for Weird Vibes:  
-* Uses SuperWoW (if available) to avoid target swaps
-* Empowers `/starattack` to avoid delaying OH swings when dual weilding
+* Uses SuperWoW (if available) to avoid target swaps and buff debuff tracking.
+* Empowers `/starattack` to avoid delaying OH swings when dual wielding
 * `mybuff`, `mydebuff`, and `cooldown` all allow using `<`/`>` in the same way that `mypower` does
-* Allows item id's to be used in macros instead of names, to shorted them
+* Allows item id's to be used in macros instead of names, to shorten them
 * New `zone`/`nozone` conditional, e.g.: `[zone:Naxxramas] [nozone:Orgrimmar]`
 * `/use` can cast spells as well for mixing item use and spells together in macros, prefer `/cast` when you can for better performance.
 * new `reactive`/`noreactive` conditional for detecting when things like Revenge are active. (Requires a bare Revenge on actionbars somewhere.)
