@@ -560,8 +560,10 @@ local reactives = {
     ["interface\\icons\\ability_warrior_revenge"] = "revenge", -- war
     ["interface\\icons\\ability_meleedamage"] = "overpower", -- war
     ["interface\\icons\\ability_warrior_challange"] = "riposte", -- rogue
-    ["interface\\icons\\ability_hunter_swiftstrike"] = "mongoose bite", -- hunter
+    ["interface\\icons\\ability_hunter_swiftstrike"] = "mongoose_bite", -- hunter
     ["interface\\icons\\ability_warrior_challange"] = "counterattack", -- hunter
+    ["interface\\icons\\ability_warrior_riposte"] = "counterattack", -- twow 1.17.2 war
+    ["interface\\icons\\inv_enchant_essencemysticallarge"] = "arcane_surge",
 }
 
 -- store found reactive id's, why scan every slot every press
@@ -601,7 +603,7 @@ function Roids.CheckReactiveAbility(spellName)
             return r
         end
     end
-    Roids.Print(spellName .. " not found on action bars!")
+    Roids.Print(spellName .. " not found on action bars, or isn't an implemented reactive.")
     return false
 end
 
