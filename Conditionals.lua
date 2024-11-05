@@ -856,11 +856,12 @@ Roids.Keywords = {
     end,
     
     channeled = function(conditionals)
-        return Roids.CurrentSpell.spellName ~= "";
+        return Roids.CurrentSpell.type == "channeled";
     end,
     
     nochanneled = function(conditionals)
-        return Roids.CurrentSpell.spellName == "";
+        return Roids.CurrentSpell.type ~= "channeled"
+        -- return Roids.CurrentSpell.spellName == "";
     end,
     
     attacks = function(conditionals)
