@@ -32,6 +32,7 @@ SLASH_UNSHIFT1 = "/unshift";
 
 SlashCmdList.UNSHIFT = Roids.DoUnshift;
 
+-- TODO make this conditional too
 SLASH_CANCELAURA1 = "/cancelaura";
 SLASH_CANCELAURA2 = "/unbuff";
 
