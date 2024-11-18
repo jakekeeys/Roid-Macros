@@ -569,9 +569,9 @@ local reactives = {
 -- store found reactive id's, why scan every slot every press
 local reactive = {}
 function Roids.CheckReactiveAbility(spellName)
+    spellName = string.lower(spellName)
     local function CheckAction(tex,spellName,actionSlot)
         if tex and spellName and actionSlot then
-            spellName = string.lower(spellName)
             tex = string.lower(tex)
             for spell,spell_texture in pairs(reactives) do
                 if reactives[tex] == spellName then
