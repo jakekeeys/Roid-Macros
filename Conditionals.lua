@@ -175,6 +175,8 @@ function Roids.ValidateAura(aura_data, isbuff, unit)
         return true
     elseif limit == nil and stack_count == amount then
         return true
+    elseif limit == nil and amount == nil and stack_count > 0 then
+        return true
     else
         return false
     end
